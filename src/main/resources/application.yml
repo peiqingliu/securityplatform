@@ -55,3 +55,57 @@ spring:
     generate-ddl: true
     hibernate:
       ddl-auto: none
+#      enable_lazy_load_no_trans: true
+#    open-in-view: true
+
+#系统自定义配置
+cetc:
+  #文件上传路径
+  uploadFolder:
+    path: D:/data/files/
+    temp: D:/data/tempfiles/
+  #token
+  token:
+    # 默认redis 设置为true后，token将存入redis，并具有单点登录功能 设为false将使用JWT交互
+    redis: false
+    # token中存储用户权限数据 设为true开启后可避免每次请求再获取用户权限，但有可能导致编辑权限菜单后无法读取到最新权限数据（需用户重新登录）
+    storePerms: true
+  # token过期时间（分钟）
+  tokenExpireTime: 60
+  # 用户选择保存登录状态对应token过期时间（天）
+  saveLoginTime: 7
+  # 限制用户登陆错误次数（次）
+  loginTimeLimit: 10
+  # 错误超过次数后多少分钟后才能继续登录（分钟）
+  loginAfterTime: 10
+  tenant:
+    column: tenant_id
+    tables:
+      - t_notice
+ignored:
+  urls:
+    - /editor-app/**
+    - /cetc/act/**
+    - /cetc/dictData/getByType/**
+    - /cetc/email/sendResetCode
+    - /cetc/email/resetByEmail
+    - /cetc/file/view/**
+    - /cetc/upload/**
+    - /cetc/social/**
+    - /cetc/ws/**
+    - /cetc/user/regist
+    - /cetc/user/smsLogin
+    - /cetc/user/resetByMobile
+    - /cetc/common/**
+    - /cetc/flow/process/diagram-view
+    - /druid/**
+    - /swagger-ui.html
+    - /swagger-resources/**
+    - /swagger/**
+    - /**/v2/api-docs
+    - /**/*.js
+    - /**/*.css
+    - /**/*.png
+    - /**/*.ico
+    - /cetc/test/**
+    - /cetc/app/**
