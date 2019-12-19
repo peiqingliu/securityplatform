@@ -54,6 +54,18 @@ public class PermissionController extends BaseController<Permission,String> {
         return new ResultUtil<List<PermissionVO>>().setData(list);
     }
 
+
+    /**
+     * 前端按钮数据
+     */
+    @GetMapping("/buttons")
+    @ApiOperation(value = "前端按钮数据", notes = "前端按钮数据")
+    public Result<List<PermissionVO>> buttons(User user) {
+        List<String> roleIds = securityUtil.getRoleIds();
+        List<PermissionVO> list = permissionService.buttons(roleIds);
+        return new ResultUtil<List<PermissionVO>>().setData(list);
+    }
+
     @Override
     public PermissionService getService() {
         return permissionService;

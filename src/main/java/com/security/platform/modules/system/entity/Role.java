@@ -34,11 +34,6 @@ import javax.persistence.Transient;
 public class Role extends BaseEntity {
     private static final long serialVersionUID = -8794838294650581528L;
 
-    /**
-     * 租户ID
-     */
-    @ApiModelProperty(value = "租户ID")
-    private String tenantId;
 
     /**
      * 父主键
@@ -97,11 +92,6 @@ public class Role extends BaseEntity {
     @ApiModelProperty(value = "备注")
     private String description;
 
-    /**
-     * 关联的基础表
-     */
-    @ApiModelProperty(value = "关联的基础表")
-    private String tableName;
 
 
     @Transient

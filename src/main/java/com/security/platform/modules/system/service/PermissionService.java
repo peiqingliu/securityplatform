@@ -24,5 +24,18 @@ public interface PermissionService extends BaseService<Permission,String> {
      */
     List<Permission> findByTypeAndStatusOrderBySortOrder(Integer type, Integer status);
 
+    /**
+     * 获取前端的页面路由
+     * @param roleIds
+     * @return
+     */
     List<PermissionVO> routes(List<String> roleIds);
+
+    /**
+     * 按钮树形结构
+     *
+     * @param roleIds
+     * @return
+     */
+    List<PermissionVO> buttons(List<String> roleIds);
 }

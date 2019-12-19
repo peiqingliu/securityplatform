@@ -15,6 +15,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -71,17 +72,17 @@ public class User extends BaseEntity {
     @Transient
     @TableField(exist=false)
     @ApiModelProperty(value = "用户拥有角色")
-    private List<Role> roles;
+    private List<Role> roles =  new ArrayList<>(16);
 
     @Transient
     @TableField(exist=false)
     @ApiModelProperty(value = "用户拥有角色Ids")
-    private List<String> roleIds;
+    private List<String> roleIds = new ArrayList<>(16);
 
     @Transient
     @TableField(exist=false)
     @ApiModelProperty(value = "用户拥有的权限")
-    private List<Permission> permissions;
+    private List<Permission> permissions = new ArrayList<>(16);
 
     @Transient
     @TableField(exist=false)

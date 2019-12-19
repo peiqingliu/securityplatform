@@ -3,8 +3,6 @@ package com.security.platform.common.utils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.security.platform.modules.system.vo.PermissionVO;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +14,16 @@ import java.util.Map;
  * @date 2019/12/18 15:17
  * @description 将list转成tree
  */
-@Component
-@AllArgsConstructor
 public class TreeToolUtils {
 
-    public List<PermissionVO> rootList; //根节点对象存放到这里
+    private List<PermissionVO> rootList ; //根节点对象存放到这里
 
-    public List<PermissionVO> bodyList; //其他节点存放到这里，可以包含根节点
+    private List<PermissionVO> bodyList ; //其他节点存放到这里，可以包含根节点
+
+    public TreeToolUtils(List<PermissionVO> rootList, List<PermissionVO> bodyList) {
+        this.rootList = rootList;
+        this.bodyList = bodyList;
+    }
 
 
     public List<PermissionVO> getTree(){   //调用的方法入口
