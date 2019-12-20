@@ -36,6 +36,11 @@ public class UserRoleServiceImpl implements UserRoleService {
         return userRoleDao.findByUserId(userId);
     }
 
+    @Override
+    public void deleteByUserId(String userId) {
+        userRoleDao.deleteByUserId(userId);
+    }
+
 
     @Override
     public UserRoleDao getRepository() {

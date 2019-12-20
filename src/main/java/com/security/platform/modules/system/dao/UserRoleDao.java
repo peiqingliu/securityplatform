@@ -26,26 +26,7 @@ public interface UserRoleDao extends BaseDao<UserRole,String> {
      */
     void deleteByUserId(String userId);
 
-    /**
-     * 根据角色名称和用户id查询
-     * @return
-     */
-    //List<UserRole> findDistinctByUserIdAndRoleId();
 
-    /**
-     * 判断是否存在
-     * @param roleId
-     * @param userId
-     * @return
-     */
-    boolean existsByRoleIdAndUserId(String roleId,String userId);
-
-    /**
-     * 删除
-     * @param userId
-     * @param roleId
-     */
-    void deleteByUserIdAndRoleId(String userId,String roleId);
 
     /**
      * 获取用户拥有的所有权限

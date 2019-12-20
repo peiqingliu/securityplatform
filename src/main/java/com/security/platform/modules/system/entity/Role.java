@@ -93,10 +93,4 @@ public class Role extends BaseEntity {
     private String description;
 
 
-
-    @Transient
-    @TableField(exist=false)
-    @ApiModelProperty(value = "角色名称")
-    private String name;
-
 }

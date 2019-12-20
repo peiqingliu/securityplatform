@@ -34,7 +34,6 @@ public class BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-
     @Id
     @TableId
     @ApiModelProperty(value = "唯一标识")

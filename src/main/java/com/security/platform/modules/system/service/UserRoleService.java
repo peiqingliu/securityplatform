@@ -29,5 +29,10 @@ public interface UserRoleService extends BaseService<UserRole,String> {
      */
     List<UserRole> findByUserId(String userId);
 
+    /**
+     * 删除用户角色
+     * @param userId
+     */
+    void deleteByUserId(String userId);
 
 }

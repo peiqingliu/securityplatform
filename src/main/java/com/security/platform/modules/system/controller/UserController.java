@@ -13,6 +13,7 @@ import com.security.platform.modules.system.entity.UserRole;
 import com.security.platform.modules.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
@@ -25,6 +26,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -70,10 +72,6 @@ public class UserController extends BaseController<User,String> {
             //关联角色
             List<Role> roles = findRoleByUserId(u.getId());
             u.setRoles(roles);
-
-            // 清除持久上下文环境 避免后面语句导致持久化
-            //entityManager.clear();
-            u.setPassword(null);
         }
         return new ResultUtil<Page<User>>().setData(page);
     }
@@ -93,11 +91,44 @@ public class UserController extends BaseController<User,String> {
         String encryptPass = new BCryptPasswordEncoder().encode(u.getPassword());
         u.setPassword(encryptPass);
         User user = userService.save(u);
+
         if(user==null){
             return new ResultUtil<Object>().setErrorMsg("添加失败");
         }
+        if(u.getDefaultRole() != null){
+            UserRole userRole = new UserRole();
+            userRole.setUserId(user.getId());
+            userRole.setRoleId(u.getDefaultRole());
+            userRoleService.save(userRole);
+        }
         return new ResultUtil<Object>().setSuccessMsg("添加成功");
     }
+
+
+    /**
+     * 修改
+     */
+    @PostMapping("/update")
+    @ApiOperation(value = "修改", notes = "传入User")
+    public Result<Object> updateUser(@Valid @RequestBody User user) {
+        User user1 = userService.update(user);
+        return new ResultUtil<Object>().setData(user1);
+    }
+
+    /**
+     * 删除
+     */
+    @PostMapping("/remove")
+    @ApiOperation(value = "删除", notes = "传入ids")
+    public Result<Object> remove(@ApiParam(value = "主键集合", required = true) @RequestParam String ids) {
+        List<String> list = Arrays.asList(ids.split(","));
+        for (String userId1 : list){
+            userRoleService.deleteByUserId(userId1);
+            userService.delete(userId1);
+        }
+        return new ResultUtil<Object>().setSuccessMsg("删除成功");
+    }
+
 
     private List<Role> findRoleByUserId(String userId){
         List<UserRole> userRoles = userRoleService.findByUserId(userId);
