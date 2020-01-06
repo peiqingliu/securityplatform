@@ -44,8 +44,7 @@ public class Camera extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String cameraModel;
 
-    @ApiModelProperty(value = "登录名称")
-    @Column(unique = true, nullable = false)
+    @ApiModelProperty(value = "登录名")
     private String loginName;
 
     @ApiModelProperty(value = "登录密码")

@@ -69,14 +69,14 @@ public class CameraServiceImpl implements CameraService {
                     list.add(cb.like(cameraModelField,'%' + camera.getCameraModel() + '%'));
                 }
                 //ip
-                if (StrUtil.isNotBlank(camera.getCameraName())){
-                    list.add(cb.equal(ipField,camera.getCameraName()));
+                if (StrUtil.isNotBlank(camera.getIp())){
+                    list.add(cb.equal(ipField,camera.getIp()));
                 }
 
                 //状态
-                if (null != camera.getStatus()){
+             /*   if (null != camera.getStatus()){
                     list.add(cb.equal(statusField,camera.getStatus()));
-                }
+                }*/
 
                 //创建时间
                 if (StrUtil.isNotBlank(searchVo.getStartDate()) && StrUtil.isNotBlank(searchVo.getEndDate())){

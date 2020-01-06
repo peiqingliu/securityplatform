@@ -74,15 +74,15 @@ public class PermissionServiceImpl implements PermissionService {
             List<Permission> permissions = findAllPermissions(roleIds);
             List<PermissionVO> permissionVOS = new ArrayList<>(16);
             for (Permission permission : permissions){
-                if (!permission.getLevel().equals(0)){
+              /*  if (!permission.getLevel().equals(0)){*/
                     PermissionVO permissionVO = permission2PermissionVO(permission);
                     permissionVOS.add(permissionVO);
-                }
+            /*    }*/
             }
             PermissionVO rootPermission = new PermissionVO();
-            rootPermission.setId("1");
+            rootPermission.setId("0");
             rootPermission.setTitle("根节点");
-            rootPermission.setParentId("0");
+            rootPermission.setParentId("-1");
             List<PermissionVO> rootList = new ArrayList<>(16);
             rootList.add(rootPermission);
             List<PermissionVO> result =  getPermissionVOTree(rootList,permissionVOS);
