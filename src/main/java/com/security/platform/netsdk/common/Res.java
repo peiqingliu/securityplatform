@@ -41,10 +41,10 @@ public final class Res {
 	public void switchLanguage(LanguageType type) {
 		switch(type) {
 			case Chinese:
-				bundle = ResourceBundle.getBundle("res", new Locale("zh", "CN"));
+				bundle = ResourceBundle.getBundle("i18n/res", new Locale("zh", "CN"));
 				break;
 			case English:
-				bundle = ResourceBundle.getBundle("res", new Locale("en", "US"));
+				bundle = ResourceBundle.getBundle("i18n", new Locale("en", "US"));
 				break;
 			default:
 				break;

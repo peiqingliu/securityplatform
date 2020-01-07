@@ -55,7 +55,8 @@ spring:
     generate-ddl: true
     hibernate:
       ddl-auto: none
-#      enable_lazy_load_no_trans: true
+  messages:
+    basename: i18n/res
 #    open-in-view: true
 
 #系统自定义配置
