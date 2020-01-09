@@ -1,4 +1,4 @@
-package com.security.platform.config.cetc;
+package com.security.platform.config.us;
 
 import com.security.platform.config.security.registry.SecureRegistry;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +14,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 
 @Configuration
-public class CetcConfiguration implements WebMvcConfigurer {
+public class UsConfiguration implements WebMvcConfigurer {
 
     @Bean
     public SecureRegistry secureRegistry() {

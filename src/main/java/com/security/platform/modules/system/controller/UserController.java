@@ -40,7 +40,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @Api(description = "用户接口")
-@RequestMapping("/cetc/system/user")
+@RequestMapping("/us/system/user")
 @CacheConfig(cacheNames = "user")
 @Transactional
 public class UserController extends BaseController<User,String> {

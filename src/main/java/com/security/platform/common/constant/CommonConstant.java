@@ -224,12 +224,12 @@ public interface CommonConstant {
     /**
      * 短信验证码key前缀
      */
-    String PRE_SMS = "CETC_PRE_SMS:";
+    String PRE_SMS = "US_PRE_SMS:";
 
     /**
      * 邮件验证码key前缀
      */
-    String PRE_EMAIL = "CETC_PRE_EMAIL:";
+    String PRE_EMAIL = "US_PRE_EMAIL:";
 
     /**
      * 本地文件存储

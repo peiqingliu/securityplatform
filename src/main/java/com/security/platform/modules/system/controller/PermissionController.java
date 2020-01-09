@@ -31,7 +31,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @Api(description = "菜单/权限管理接口")
-@RequestMapping("/cetc/system/permission")
+@RequestMapping("/us/system/permission")
 @CacheConfig(cacheNames = "permission")
 @Transactional
 public class PermissionController extends BaseController<Permission,String> {

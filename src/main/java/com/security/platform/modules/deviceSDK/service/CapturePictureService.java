@@ -1,5 +1,6 @@
 package com.security.platform.modules.deviceSDK.service;
 
+import com.security.platform.common.utils.AliyunOSSUtil;
 import com.security.platform.modules.deviceSDK.module.CapturePictureModule;
 import com.security.platform.modules.deviceSDK.module.RealPlayModule;
 import com.security.platform.netsdk.common.Res;
@@ -11,6 +12,8 @@ import com.sun.jna.CallbackThreadInitializer;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.NamedThreadLocal;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -20,6 +23,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
 
 /**
  * @author LiuPeiQing
@@ -32,6 +37,14 @@ import java.io.IOException;
 @Slf4j
 @Service
 public class CapturePictureService {
+
+    @Autowired
+    private AliyunOSSUtil aliyunOSSUtil;
+
+    /**
+     * 线程安全
+     */
+    private static final ThreadLocal<String> IpThreadLocal = new NamedThreadLocal<>("ip");
 
     private boolean bTimerCapture = false;
 
@@ -56,21 +69,31 @@ public class CapturePictureService {
      */
     public void handleCapturePicture(){
         //初始化
-        LoginModule.init(disConnect, haveReConnect);   // init sdk
-
+        //LoginModule.init(disConnect, haveReConnect);   // init sdk
+        init();
         //登录
-        login();
+        login("124.226.139.136",3777,"admin","admin888");
+    }
+
+    /**
+     * 初始化
+     * @return
+     */
+    public boolean init(){
+        //初始化
+        return  LoginModule.init(disConnect, haveReConnect);   // init sdk
     }
 
     private static class DisConnect implements NetSDKLib.fDisConnect {
         public void invoke(NetSDKLib.LLong m_hLoginHandle, String pchDVRIP, int nDVRPort, Pointer dwUser) {
             System.out.printf("Device[%s] Port[%d] DisConnect!\n", pchDVRIP, nDVRPort);
+            log.info("Device[%s] Port[%d] DisConnect!\n", pchDVRIP, nDVRPort);
 
-            SwingUtilities.invokeLater(new Runnable() {
+      /*      SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                    // frame.setTitle(Res.string().getCapturePicture() + " : " + Res.string().getDisConnectReconnecting());
                 }
-            });
+            });*/
         }
     }
 
@@ -79,24 +102,22 @@ public class CapturePictureService {
     private static class HaveReConnect implements NetSDKLib.fHaveReConnect {
         public void invoke(NetSDKLib.LLong m_hLoginHandle, String pchDVRIP, int nDVRPort, Pointer dwUser) {
             System.out.printf("ReConnect Device[%s] Port[%d]\n", pchDVRIP, nDVRPort);
-
-            SwingUtilities.invokeLater(new Runnable() {
+            log.info("ReConnect Device[%s] Port[%d]\n", pchDVRIP, nDVRPort);
+        /*    SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                   //  frame.setTitle(Res.string().getCapturePicture() + " : " + Res.string().getOnline());
                 }
-            });
+            });*/
         }
     }
 
-    public boolean login() {
+    public boolean login(String ip,int port,String loginName,String password) {
         Native.setCallbackThreadInitializer(m_CaptureReceiveCB,
                 new CallbackThreadInitializer(false, false, "snapPicture callback thread"));
-        boolean loginResult = LoginModule.login("124.226.139.136",
-                37777,
-                "admin",
-                "admin888");
+        boolean loginResult = LoginModule.login(ip,port,loginName,password);
         if(loginResult) {
-            log.info("登录成功===");
+            IpThreadLocal.set(ip);
+            log.info("登录成功",ip,port,loginName,password);
             //开始预览
             //realplay();
             //本地截图
@@ -104,11 +125,11 @@ public class CapturePictureService {
             //远程截图
             remoteCapture();
             CapturePictureModule.setSnapRevCallBack(m_CaptureReceiveCB);
+            return true;
         } else {
             log.error("LOGIN_FAILED" + ", " + LoginModule.netsdk.CLIENT_GetLastError() + ",ERROR_MESSAGE" + 0);
             return false;
         }
-        return true;
     }
 
     public fCaptureReceiveCB  m_CaptureReceiveCB = new fCaptureReceiveCB();
@@ -117,7 +138,7 @@ public class CapturePictureService {
         public void invoke(NetSDKLib.LLong lLoginID, Pointer pBuf, int RevLen, int EncodeType, int CmdSerial, Pointer dwUser) {
             if(pBuf != null && RevLen > 0) {
                 String strFileName = SavePath.getSavePath().getSaveCapturePath();
-
+                log.info("strFileName = " + strFileName);
                 System.out.println("strFileName = " + strFileName);
 
                 byte[] buf = pBuf.getByteArray(0, RevLen);
@@ -127,18 +148,20 @@ public class CapturePictureService {
                     if(bufferedImage == null) {
                         return;
                     }
+                    //上传到阿里云
+                    aliyunOSSUtil.upload(IpThreadLocal.get(),byteArrInput);
                     ImageIO.write(bufferedImage, "jpg", new File(strFileName));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 // show picture
-                SwingUtilities.invokeLater(new Runnable() {
+          /*      SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
 
                     }
-                });
+                });*/
             }
         }
     }
@@ -155,7 +178,7 @@ public class CapturePictureService {
 
     public void realplay() {
         if(!bRealPlay) {
-            m_hPlayHandle = RealPlayModule.startRealPlay(0,0==0? 0:3,realPlayWindow);
+            m_hPlayHandle = RealPlayModule.startRealPlay(0,0,realPlayWindow);
             if(m_hPlayHandle.longValue() != 0) {
                 bRealPlay = true;
             }
@@ -191,7 +214,8 @@ public class CapturePictureService {
         }
     }
 
-    private void remoteCapture(){
+    public void remoteCapture(){
         CapturePictureModule.remoteCapturePicture(0);
+        CapturePictureModule.setSnapRevCallBack(m_CaptureReceiveCB);
     }
 }

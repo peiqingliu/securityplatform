@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @Api(description = "摄像头端点")
-@RequestMapping("/cetc/monitor/camera")
+@RequestMapping("/us/monitor/camera")
 @CacheConfig(cacheNames = "camera")
 @Transactional
 public class CameraController extends BaseController<Camera,String> {

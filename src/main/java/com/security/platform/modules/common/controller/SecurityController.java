@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Api(description = "Security相关接口")
 @Transactional
-@RequestMapping("/cetc/common")
+@RequestMapping("/us/common")
 public class SecurityController {
 
     @GetMapping(value = "/needLogin")

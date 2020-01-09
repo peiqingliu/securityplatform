@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/cetc/log")
+@RequestMapping("/us/log")
 @Api(value = "日志通用接口", tags = "日志通用接口")
 public class LogController {
 

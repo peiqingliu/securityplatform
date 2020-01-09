@@ -6,11 +6,13 @@ import java.io.File;
 import com.security.platform.netsdk.lib.NetSDKLib;
 import com.security.platform.netsdk.lib.ToolKits;
 import com.sun.jna.ptr.IntByReference;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 登陆接口实现
  * 主要有 ：初始化、登陆、登出功能
  */
+@Slf4j
 public class LoginModule {
 
 	public static NetSDKLib netsdk 		= NetSDKLib.NETSDK_INSTANCE;
@@ -35,6 +37,7 @@ public class LoginModule {
 	public static boolean init(NetSDKLib.fDisConnect disConnect, NetSDKLib.fHaveReConnect haveReConnect) {	
 		bInit = netsdk.CLIENT_Init(disConnect, null);
 		if(!bInit) {
+			log.error("Initialize SDK failed");
 			System.out.println("Initialize SDK failed");
 			return false;
 		}
@@ -53,6 +56,7 @@ public class LoginModule {
 		setLog.bSetPrintStrategy = 1;
 		bLogopen = netsdk.CLIENT_LogOpen(setLog);
 		if(!bLogopen ) {
+			log.error("Failed to open NetSDK log");
 			System.err.println("Failed to open NetSDK log");
 		}
 		
@@ -71,7 +75,6 @@ public class LoginModule {
 		netParam.nConnectTime = 10000;      // 登录时尝试建立链接的超时时间
 		netParam.nGetConnInfoTime = 3000;   // 设置子连接的超时时间
 		netsdk.CLIENT_SetNetworkParam(netParam);	
-		
 		return true;
 	}
 	

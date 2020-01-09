@@ -29,10 +29,10 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class AuthenticationFailHandler extends SimpleUrlAuthenticationFailureHandler {
 
-    @Value("${cetc.loginTimeLimit}")
+    @Value("${us.loginTimeLimit}")
     private Integer loginTimeLimit;
 
-    @Value("${cetc.loginAfterTime}")
+    @Value("${us.loginAfterTime}")
     private Integer loginAfterTime;
 
     @Autowired

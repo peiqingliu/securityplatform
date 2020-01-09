@@ -10,4 +10,9 @@ class SecurityplatformApplicationTests {
     void contextLoads() {
     }
 
+    public static void main(String[] args) {
+        long result = System.currentTimeMillis();
+        System.out.println("result ======" + result);
+    }
+
 }

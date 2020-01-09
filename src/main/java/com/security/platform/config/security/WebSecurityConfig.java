@@ -37,13 +37,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${cetc.token.redis}")
+    @Value("${us.token.redis}")
     private Boolean tokenRedis;
 
-    @Value("${cetc.tokenExpireTime}")
+    @Value("${us.tokenExpireTime}")
     private Integer tokenExpireTime;
 
-    @Value("${cetc.token.storePerms}")
+    @Value("${us.token.storePerms}")
     private Boolean storePerms;
 
 
@@ -90,9 +90,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         registry.and()
                 // 表单登录方式
                 .formLogin()
-                .loginPage("/cetc/common/needLogin")
+                .loginPage("/us/common/needLogin")
                 // 登录请求url
-                .loginProcessingUrl("/cetc/login")
+                .loginProcessingUrl("/us/login")
                 .permitAll()
                 // 成功处理类
                 .successHandler(successHandler)

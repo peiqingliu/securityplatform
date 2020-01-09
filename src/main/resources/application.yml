@@ -58,9 +58,19 @@ spring:
   messages:
     basename: i18n/res
 #    open-in-view: true
+oos:
+  endpoint: oss-cn-shanghai.aliyuncs.com
+  keyId:    xxxxxxxx # 填写刚刚生成的AccessKey
+  keySecret: xxxxxxx  # 填写刚刚生成的Accesssecret
+  bucketName: 2019131 # bucket名称
+  fileHost: picture    #bucket下文件夹的路径
 
 #系统自定义配置
-cetc:
+us:
+  #签名秘钥
+  ticketSecret: helloworld
+  # 接口过期时间（分钟）
+  tickerExpireTime: 2
   #文件上传路径
   uploadFolder:
     path: D:/data/files/
@@ -86,19 +96,19 @@ cetc:
 ignored:
   urls:
     - /editor-app/**
-    - /cetc/act/**
-    - /cetc/dictData/getByType/**
-    - /cetc/email/sendResetCode
-    - /cetc/email/resetByEmail
-    - /cetc/file/view/**
-    - /cetc/upload/**
-    - /cetc/social/**
-    - /cetc/ws/**
-    - /cetc/user/regist
-    - /cetc/user/smsLogin
-    - /cetc/user/resetByMobile
-    - /cetc/common/**
-    - /cetc/flow/process/diagram-view
+    - /us/act/**
+    - /us/dictData/getByType/**
+    - /us/email/sendResetCode
+    - /us/email/resetByEmail
+    - /us/file/view/**
+    - /us/upload/**
+    - /us/social/**
+    - /us/ws/**
+    - /us/user/regist
+    - /us/user/smsLogin
+    - /us/user/resetByMobile
+    - /us/common/**
+    - /us/flow/process/diagram-view
     - /druid/**
     - /swagger-ui.html
     - /swagger-resources/**
@@ -108,5 +118,5 @@ ignored:
     - /**/*.css
     - /**/*.png
     - /**/*.ico
-    - /cetc/test/**
-    - /cetc/app/**
+    - /us/test/**
+    - /us/api/**

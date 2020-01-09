@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @Api(description = "测试端点")
-@RequestMapping("/cetc/test/capturePicture")
+@RequestMapping("/us/test/capturePicture")
 @Transactional
 public class CapturePictureController {
 
@@ -38,4 +38,6 @@ public class CapturePictureController {
         capturePictureService.logout();
         return "success";
     }
+
+
 }

@@ -12,7 +12,7 @@ public interface SecurityConstant {
     /**
      * JWT签名加密key
      */
-    String JWT_SIGN_KEY = "cetc";
+    String JWT_SIGN_KEY = "us";
 
 
 
@@ -35,13 +35,13 @@ public interface SecurityConstant {
     /**
      * redis缓存token前缀，交互token前缀key
      */
-    String TOKEN_PRE = "CETC_TOKEN_PRE:";
+    String TOKEN_PRE = "US_TOKEN_PRE:";
 
 
     /**
      * 用户token前缀key 单点登录使用
      */
-    String USER_TOKEN = "CETC_USER_TOKEN:";
+    String USER_TOKEN = "US_USER_TOKEN:";
 
     /**
      * 用户选择JWT保存时间参数头

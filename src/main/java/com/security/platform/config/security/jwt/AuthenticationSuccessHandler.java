@@ -41,16 +41,16 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
-    @Value("${cetc.token.redis}")
+    @Value("${us.token.redis}")
     private Boolean tokenRedis;
 
-    @Value("${cetc.tokenExpireTime}")
+    @Value("${us.tokenExpireTime}")
     private Integer tokenExpireTime;
 
-    @Value("${cetc.saveLoginTime}")
+    @Value("${us.saveLoginTime}")
     private Integer saveLoginTime;
 
-    @Value("${cetc.token.storePerms}")
+    @Value("${us.token.storePerms}")
     private Boolean storePerms;
 
 

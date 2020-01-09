@@ -38,25 +38,25 @@ public class SecurityUtil {
     /**
      * 是否使用redis保存
      */
-    @Value("${cetc.token.redis}")
+    @Value("${us.token.redis}")
     private Boolean tokenRedis;
 
     /**
      *
      */
-    @Value("${cetc.saveLoginTime}")
+    @Value("${us.saveLoginTime}")
     private Integer saveLoginTime;
 
     /**
      * token过期时间
      */
-    @Value("${cetc.tokenExpireTime}")
+    @Value("${us.tokenExpireTime}")
     private Integer tokenExpireTime;
 
     /**
      * 是否保存权限
      */
-    @Value("${cetc.token.storePerms}")
+    @Value("${us.token.storePerms}")
     private Boolean storePerms;
 
     @Autowired
