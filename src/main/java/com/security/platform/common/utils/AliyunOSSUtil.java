@@ -1,5 +1,6 @@
 package com.security.platform.common.utils;
 
+import cn.hutool.core.date.DateUtil;
 import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSException;
@@ -7,16 +8,12 @@ import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.CreateBucketRequest;
 import com.aliyun.oss.model.PutObjectRequest;
 import com.aliyun.oss.model.PutObjectResult;
-import com.security.platform.config.oss.OSSProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -31,35 +28,29 @@ import java.util.Date;
 @Component
 public class AliyunOSSUtil {
 
-    @Autowired
-    private OSSProperties oSSProperties;
+    @Value("${oss.bucketName}")
+    private String bucketName;
+
+    @Value("${oss.endpoint}")
+    private String fileHost;
 
     @Value("${oss.endpoint}")
     private String endpoint;
 
+    @Value("${oss.webUrl}")
+    private String webUrl;
 
-    @Value("${oss.keyId}")
-    private String accessKeyId;
-
-    @Value("${oss.keySecret}")
-    private String accessKeySecret;
-
-    @Value("${oss.bucketName}")
-    private String bucketName;
-
-    @Value("${oss.fileHost}")
-    private String fileHost;
+    @Autowired
+    private OSSClient ossClient;
 
     /**
      * 上传
      * @param
      * @return
      */
-    public  String upload(String ip, InputStream inputStream){
-        log.info("=========>OSS文件上传开始：");
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        String dateStr = format.format(new Date());
-        OSSClient ossClient = new OSSClient(endpoint,accessKeyId,accessKeySecret);
+    public  String putObject(String ip, InputStream inputStream){
+        log.info("OSS文件上传开始：");
+        String dateStr = DateUtil.formatDate(new Date());
         try {
             //容器不存在，就创建
             if(! ossClient.doesBucketExist(bucketName)){
@@ -69,14 +60,16 @@ public class AliyunOSSUtil {
                 ossClient.createBucket(createBucketRequest);
             }
             //创建文件路径
-            String fileUrl = fileHost+"/"+(dateStr + "/" + ip.replace("-",""));
+            String fileUrl = fileHost+"/"+(dateStr + "/" + ip.replace("-","")+".jpg");
             //上传文件
             PutObjectResult result = ossClient.putObject(new PutObjectRequest(bucketName, fileUrl,inputStream ));
+            String resultUrl = webUrl +"/"+ fileUrl;//文件的web访问地址
+            log.info("resultUrl=" + resultUrl);
             //设置权限 这里是公开读
             ossClient.setBucketAcl(bucketName,CannedAccessControlList.PublicRead);
             if(null != result){
-                log.info("==========>OSS文件上传成功,OSS地址："+fileUrl);
-                return fileUrl;
+                log.info("OSS文件上传成功,OSS地址："+resultUrl);
+                return resultUrl;
             }
         }catch (OSSException oe){
             log.error(oe.getMessage());
@@ -97,8 +90,6 @@ public class AliyunOSSUtil {
     public  String deleteBlog(String fileKey){
         log.info("=========>OSS文件删除开始");
         try {
-            OSSClient ossClient = new OSSClient(endpoint,accessKeyId,accessKeySecret);
-
             if(!ossClient.doesBucketExist(bucketName)){
                 log.info("==============>您的Bucket不存在");
                 return "您的Bucket不存在";

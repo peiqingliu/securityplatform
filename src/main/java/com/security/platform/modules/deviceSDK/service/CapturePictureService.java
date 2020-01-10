@@ -1,6 +1,8 @@
 package com.security.platform.modules.deviceSDK.service;
 
 import com.security.platform.common.utils.AliyunOSSUtil;
+import com.security.platform.common.utils.ResultUtil;
+import com.security.platform.common.vo.CameraVo;
 import com.security.platform.modules.deviceSDK.module.CapturePictureModule;
 import com.security.platform.modules.deviceSDK.module.RealPlayModule;
 import com.security.platform.netsdk.common.Res;
@@ -23,9 +25,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
-
+import static com.security.platform.netsdk.demo.LoginModule.m_hLoginHandle;
 /**
  * @author LiuPeiQing
  * @version 1.0
@@ -65,16 +65,39 @@ public class CapturePictureService {
 
 
     /**
+     * 判断设备是否在线
+     */
+    public boolean isOnline(CameraVo cameraVo){
+
+        boolean isOnline = m_hLoginHandle.longValue() == 0? false:true;
+        if (isOnline){
+            return true;
+        }else {
+            boolean init = init();
+            if (!init){
+                log.error("Initialize SDK failed");
+                return false;
+            }
+            boolean login = login(cameraVo.getIp(),cameraVo.getPort(),cameraVo.getLoginName(),cameraVo.getPassword());
+            if (!login){
+                log.error("LOGIN_FAILED" + ", " + LoginModule.netsdk.CLIENT_GetLastError() + ",ERROR_MESSAGE" + 0);
+                return false;
+            }
+            return true;
+        }
+    }
+
+    /**
      * 截图的方法
      */
     public void handleCapturePicture(){
         //初始化
         //LoginModule.init(disConnect, haveReConnect);   // init sdk
+        boolean isOnline = m_hLoginHandle.longValue() == 0? false:true;
         init();
         //登录
-        login("124.226.139.136",3777,"admin","admin888");
+        login("124.226.139.136",37777,"admin","admin888");
     }
-
     /**
      * 初始化
      * @return
@@ -88,12 +111,6 @@ public class CapturePictureService {
         public void invoke(NetSDKLib.LLong m_hLoginHandle, String pchDVRIP, int nDVRPort, Pointer dwUser) {
             System.out.printf("Device[%s] Port[%d] DisConnect!\n", pchDVRIP, nDVRPort);
             log.info("Device[%s] Port[%d] DisConnect!\n", pchDVRIP, nDVRPort);
-
-      /*      SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                   // frame.setTitle(Res.string().getCapturePicture() + " : " + Res.string().getDisConnectReconnecting());
-                }
-            });*/
         }
     }
 
@@ -103,11 +120,6 @@ public class CapturePictureService {
         public void invoke(NetSDKLib.LLong m_hLoginHandle, String pchDVRIP, int nDVRPort, Pointer dwUser) {
             System.out.printf("ReConnect Device[%s] Port[%d]\n", pchDVRIP, nDVRPort);
             log.info("ReConnect Device[%s] Port[%d]\n", pchDVRIP, nDVRPort);
-        /*    SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                  //  frame.setTitle(Res.string().getCapturePicture() + " : " + Res.string().getOnline());
-                }
-            });*/
         }
     }
 
@@ -116,15 +128,16 @@ public class CapturePictureService {
                 new CallbackThreadInitializer(false, false, "snapPicture callback thread"));
         boolean loginResult = LoginModule.login(ip,port,loginName,password);
         if(loginResult) {
+            CapturePictureModule.setSnapRevCallBack(m_CaptureReceiveCB);
             IpThreadLocal.set(ip);
-            log.info("登录成功",ip,port,loginName,password);
+            log.info("登录成功"+ip+port+loginName+password);
             //开始预览
             //realplay();
             //本地截图
             //localCapture();
             //远程截图
-            remoteCapture();
-            CapturePictureModule.setSnapRevCallBack(m_CaptureReceiveCB);
+            //remoteCapture();
+
             return true;
         } else {
             log.error("LOGIN_FAILED" + ", " + LoginModule.netsdk.CLIENT_GetLastError() + ",ERROR_MESSAGE" + 0);
@@ -133,6 +146,7 @@ public class CapturePictureService {
     }
 
     public fCaptureReceiveCB  m_CaptureReceiveCB = new fCaptureReceiveCB();
+
     public class fCaptureReceiveCB implements NetSDKLib.fSnapRev{
         BufferedImage bufferedImage = null;
         public void invoke(NetSDKLib.LLong lLoginID, Pointer pBuf, int RevLen, int EncodeType, int CmdSerial, Pointer dwUser) {
@@ -148,20 +162,13 @@ public class CapturePictureService {
                     if(bufferedImage == null) {
                         return;
                     }
-                    //上传到阿里云
-                    aliyunOSSUtil.upload(IpThreadLocal.get(),byteArrInput);
                     ImageIO.write(bufferedImage, "jpg", new File(strFileName));
+                    //上传到阿里云
+                    String ip = IpThreadLocal.get();
+                    aliyunOSSUtil.putObject("124.226.139.136",byteArrInput);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-                // show picture
-          /*      SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-
-                    }
-                });*/
             }
         }
     }
@@ -216,6 +223,6 @@ public class CapturePictureService {
 
     public void remoteCapture(){
         CapturePictureModule.remoteCapturePicture(0);
-        CapturePictureModule.setSnapRevCallBack(m_CaptureReceiveCB);
+      //  CapturePictureModule.setSnapRevCallBack(m_CaptureReceiveCB);
     }
 }

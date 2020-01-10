@@ -1,5 +1,6 @@
 package com.security.platform.modules.deviceSDK.controller;
 
+import com.security.platform.common.vo.CameraVo;
 import com.security.platform.modules.deviceSDK.service.CapturePictureService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +28,8 @@ public class CapturePictureController {
     @Autowired
     private CapturePictureService capturePictureService;
 
-    @GetMapping("/login")
-    public String loginDevice(){
+    @GetMapping("/handleCapturePicture")
+    public String loginDevice(CameraVo cameraVo){
         capturePictureService.handleCapturePicture();
         return "success";
     }

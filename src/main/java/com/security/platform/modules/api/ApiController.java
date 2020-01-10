@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+
 /**
  * @author LiuPeiQing
  * @version 1.0
@@ -49,6 +50,7 @@ public class ApiController {
     @PostMapping("/remoteCapture")
     public Result<Object> remoteCapture(@ModelAttribute VerificationCodeParam param,
                                         @ModelAttribute CameraVo cameraVo){
+
         boolean init = capturePictureService.init();
         if (!init){
             return new ResultUtil<Object>().setErrorMsg("Initialize SDK failed");

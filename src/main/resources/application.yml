@@ -58,19 +58,19 @@ spring:
   messages:
     basename: i18n/res
 #    open-in-view: true
-oos:
-  endpoint: oss-cn-shanghai.aliyuncs.com
-  keyId:    xxxxxxxx # 填写刚刚生成的AccessKey
-  keySecret: xxxxxxx  # 填写刚刚生成的Accesssecret
-  bucketName: 2019131 # bucket名称
+oss:
+  endpoint: oss-cn-shenzhen.aliyuncs.com
+  keyId:    LTAI4FqEDM7a8h9QFMBFimJp # 填写刚刚生成的AccessKey
+  keySecret: iHD7mU00CSXRjBGyk17oLRjtYxcp91  # 填写刚刚生成的Accesssecret
+  bucketName: camera-ygx # bucket名称
   fileHost: picture    #bucket下文件夹的路径
-
+  webUrl: https://camera-ygx.oss-cn-shenzhen.aliyuncs.com
 #系统自定义配置
 us:
   #签名秘钥
   ticketSecret: helloworld
   # 接口过期时间（分钟）
-  tickerExpireTime: 2
+  tickerExpireTime: 1440
   #文件上传路径
   uploadFolder:
     path: D:/data/files/
