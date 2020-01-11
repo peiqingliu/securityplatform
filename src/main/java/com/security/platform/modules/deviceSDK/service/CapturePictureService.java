@@ -130,7 +130,9 @@ public class CapturePictureService {
         if(loginResult) {
             CapturePictureModule.setSnapRevCallBack(m_CaptureReceiveCB);
             IpThreadLocal.set(ip);
-            log.info("登录成功"+ip+port+loginName+password);
+            String result = IpThreadLocal.get();
+            log.info("result" + result);
+            log.info("登录成功="+ip+port+loginName+password);
             //开始预览
             //realplay();
             //本地截图
@@ -165,7 +167,7 @@ public class CapturePictureService {
                     ImageIO.write(bufferedImage, "jpg", new File(strFileName));
                     //上传到阿里云
                     String ip = IpThreadLocal.get();
-                    aliyunOSSUtil.putObject("124.226.139.136",byteArrInput);
+                    aliyunOSSUtil.putObject("124.226.139.136",new File(strFileName));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

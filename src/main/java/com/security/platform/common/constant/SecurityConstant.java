@@ -12,7 +12,7 @@ public interface SecurityConstant {
     /**
      * JWT签名加密key
      */
-    String JWT_SIGN_KEY = "us";
+    String JWT_SIGN_KEY = "secretKeyUS";
 
 
 

@@ -45,7 +45,7 @@ public class OssController {
                     //上传到OSS
                     //上传文件
                     InputStream is = new FileInputStream(newFile);
-                    String uploadUrl = aliyunOSSUtil.putObject("124.226.139.136",is);
+                    String uploadUrl = aliyunOSSUtil.putObject("124.226.139.136",newFile);
                 }
 
             }

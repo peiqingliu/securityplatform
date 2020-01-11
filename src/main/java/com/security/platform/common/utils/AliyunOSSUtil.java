@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Date;
 
@@ -48,9 +49,9 @@ public class AliyunOSSUtil {
      * @param
      * @return
      */
-    public  String putObject(String ip, InputStream inputStream){
+    public  String putObject(String ip, File file){
         log.info("OSS文件上传开始：");
-        String dateStr = DateUtil.formatDate(new Date());
+        String dateStr = DateTimeUtil.formatDate();
         try {
             //容器不存在，就创建
             if(! ossClient.doesBucketExist(bucketName)){
@@ -60,9 +61,9 @@ public class AliyunOSSUtil {
                 ossClient.createBucket(createBucketRequest);
             }
             //创建文件路径
-            String fileUrl = fileHost+"/"+(dateStr + "/" + ip.replace("-","")+".jpg");
+            String fileUrl = fileHost+"/"+(dateStr + "/" + ip.replace("-","")+"_"+file.getName());
             //上传文件
-            PutObjectResult result = ossClient.putObject(new PutObjectRequest(bucketName, fileUrl,inputStream ));
+            PutObjectResult result = ossClient.putObject(new PutObjectRequest(bucketName, fileUrl,file ));
             String resultUrl = webUrl +"/"+ fileUrl;//文件的web访问地址
             log.info("resultUrl=" + resultUrl);
             //设置权限 这里是公开读
