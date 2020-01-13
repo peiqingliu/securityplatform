@@ -71,6 +71,10 @@ us:
   ticketSecret: helloworld
   # 接口过期时间（分钟）
   tickerExpireTime: 1440
+  #自动注册 服务器ip
+  ip: 172.17.0.6
+  #自动注册 端口
+  port: 9500
   #文件上传路径
   uploadFolder:
     path: D:/data/files/

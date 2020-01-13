@@ -1,13 +1,12 @@
 package com.security.platform.modules.deviceSDK.service;
 
 import com.security.platform.common.utils.AliyunOSSUtil;
-import com.security.platform.common.utils.ResultUtil;
 import com.security.platform.common.vo.CameraVo;
 import com.security.platform.modules.deviceSDK.module.CapturePictureModule;
 import com.security.platform.modules.deviceSDK.module.RealPlayModule;
 import com.security.platform.netsdk.common.Res;
 import com.security.platform.netsdk.common.SavePath;
-import com.security.platform.netsdk.demo.LoginModule;
+import com.security.platform.netsdk.module.LoginModule;
 import com.security.platform.netsdk.lib.NetSDKLib;
 import com.security.platform.netsdk.lib.ToolKits;
 import com.sun.jna.CallbackThreadInitializer;
@@ -25,7 +24,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import static com.security.platform.netsdk.demo.LoginModule.m_hLoginHandle;
+import static com.security.platform.netsdk.module.LoginModule.m_hLoginHandle;
 /**
  * @author LiuPeiQing
  * @version 1.0

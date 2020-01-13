@@ -8,7 +8,7 @@ import com.security.platform.common.vo.CameraVo;
 import com.security.platform.common.vo.Result;
 import com.security.platform.common.vo.VerificationCodeParam;
 import com.security.platform.modules.deviceSDK.service.CapturePictureService;
-import com.security.platform.netsdk.demo.LoginModule;
+import com.security.platform.netsdk.module.LoginModule;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;

@@ -22,7 +22,7 @@ import javax.swing.filechooser.FileFilter;
 
 import com.security.platform.netsdk.common.ErrorCode;
 import com.security.platform.netsdk.common.PaintPanel;
-import com.security.platform.netsdk.demo.LoginModule;
+import com.security.platform.netsdk.module.LoginModule;
 import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;

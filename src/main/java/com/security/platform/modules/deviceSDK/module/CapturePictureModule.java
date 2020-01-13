@@ -1,6 +1,6 @@
 package com.security.platform.modules.deviceSDK.module;
 
-import com.security.platform.netsdk.demo.LoginModule;
+import com.security.platform.netsdk.module.LoginModule;
 import com.security.platform.netsdk.lib.NetSDKLib;
 import com.security.platform.netsdk.lib.ToolKits;
 import com.sun.jna.ptr.IntByReference;

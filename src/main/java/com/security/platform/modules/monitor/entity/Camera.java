@@ -31,17 +31,19 @@ public class Camera extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
+    @ApiModelProperty(value = "设备id")
+    @Column(unique = true, nullable = false)
+    private String devcieId;
+
     @ApiModelProperty(value = "名称")
     @Column(unique = true, nullable = false)
     private String cameraName;
 
 
     @ApiModelProperty(value = "编码")
-    @Column(unique = true, nullable = false)
     private String cameraCode;
 
     @ApiModelProperty(value = "型号")
-    @Column(unique = true, nullable = false)
     private String cameraModel;
 
     @ApiModelProperty(value = "登录名")
@@ -54,11 +56,12 @@ public class Camera extends BaseEntity {
     @ApiModelProperty(value = "安装位置")
     private String position;
 
-    @ApiModelProperty(value = "摄像头图片")
-    private String picture;
 
     @ApiModelProperty("设备ip")
-    private String ip;
+    private String deviceIp;
+
+    @ApiModelProperty("设备端口号")
+    private int devicePort;
 
     @ApiModelProperty("负责人电话")
     private String mobile;
@@ -68,6 +71,9 @@ public class Camera extends BaseEntity {
 
     @ApiModelProperty("类型")
     private Integer type;
+
+    @ApiModelProperty(value = "登录句柄")
+    private long loginHandle;
 
     @ApiModelProperty("描述")
     private String description;

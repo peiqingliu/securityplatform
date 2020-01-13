@@ -1,4 +1,4 @@
-package com.security.platform.netsdk.demo;
+package com.security.platform.netsdk.module;
 
 import java.io.File;
 
