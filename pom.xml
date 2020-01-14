@@ -24,7 +24,7 @@
         <gson.version>2.8.5</gson.version>
         <jwt.version>0.9.1</jwt.version>
         <mybatis.plug.version>3.2.0</mybatis.plug.version>
-        <aliyun.oss.version>2.4.0</aliyun.oss.version>
+        <aliyun.oss.version>3.4.2</aliyun.oss.version>
     </properties>
 
     <dependencies>
@@ -91,6 +91,13 @@
             <artifactId>hutool-all</artifactId>
             <version>${hutool.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+
 
         <!-- Gson -->
         <dependency>
@@ -166,6 +173,24 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+
+        <dependency>
+           <groupId>com.dahua</groupId>
+           <artifactId>jna</artifactId>
+           <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/jna.jar</systemPath>
+       </dependency>
+
+       <dependency>
+           <groupId>com.dahua</groupId>
+           <artifactId>examples</artifactId>
+           <version>1.0</version>
+           <scope>system</scope>
+           <systemPath>${project.basedir}/libs/examples.jar</systemPath>
+       </dependency>
+
     </dependencies>
 
     <build>
@@ -174,6 +199,16 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
             </plugin>
         </plugins>
     </build>

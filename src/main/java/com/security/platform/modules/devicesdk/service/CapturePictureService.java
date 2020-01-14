@@ -1,9 +1,9 @@
-package com.security.platform.modules.deviceSDK.service;
+package com.security.platform.modules.devicesdk.service;
 
 import com.security.platform.common.utils.AliyunOSSUtil;
 import com.security.platform.common.vo.CameraVo;
-import com.security.platform.modules.deviceSDK.module.CapturePictureModule;
-import com.security.platform.modules.deviceSDK.module.RealPlayModule;
+import com.security.platform.modules.devicesdk.module.CapturePictureModule;
+import com.security.platform.modules.devicesdk.module.RealPlayModule;
 import com.security.platform.netsdk.common.Res;
 import com.security.platform.netsdk.common.SavePath;
 import com.security.platform.netsdk.module.LoginModule;
@@ -62,6 +62,7 @@ public class CapturePictureService {
     // device reconnect callback instance
     private static HaveReConnect haveReConnect = new HaveReConnect();
 
+    private volatile static  String  deviceIp = "";
 
     /**
      * 判断设备是否在线
@@ -128,9 +129,7 @@ public class CapturePictureService {
         boolean loginResult = LoginModule.login(ip,port,loginName,password);
         if(loginResult) {
             CapturePictureModule.setSnapRevCallBack(m_CaptureReceiveCB);
-            IpThreadLocal.set(ip);
-            String result = IpThreadLocal.get();
-            log.info("result" + result);
+            deviceIp = ip;
             log.info("登录成功="+ip+port+loginName+password);
             //开始预览
             //realplay();
@@ -165,8 +164,7 @@ public class CapturePictureService {
                     }
                     ImageIO.write(bufferedImage, "jpg", new File(strFileName));
                     //上传到阿里云
-                    String ip = IpThreadLocal.get();
-                    aliyunOSSUtil.putObject("124.226.139.136",new File(strFileName));
+                    aliyunOSSUtil.putObject(deviceIp,new File(strFileName));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -224,6 +222,5 @@ public class CapturePictureService {
 
     public void remoteCapture(){
         CapturePictureModule.remoteCapturePicture(0);
-      //  CapturePictureModule.setSnapRevCallBack(m_CaptureReceiveCB);
     }
 }

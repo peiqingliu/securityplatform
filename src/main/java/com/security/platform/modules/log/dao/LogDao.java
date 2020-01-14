@@ -26,4 +26,11 @@ public interface LogDao extends BaseDao<Log,String> {
      * @return
      */
     Integer countDistinctByLogTypeIsAndCreateTimeBetween(Integer logType, Date startTime, Date endTime);
+
+    /**
+     * 查询总的登录数
+     * @param logType
+     * @return
+     */
+    Integer countDistinctByLogType(Integer logType);
 }

@@ -1,4 +1,4 @@
-package com.security.platform.modules.deviceSDK.module;
+package com.security.platform.modules.devicesdk.module;
 
 import com.security.platform.netsdk.module.LoginModule;
 import com.security.platform.netsdk.lib.NetSDKLib;

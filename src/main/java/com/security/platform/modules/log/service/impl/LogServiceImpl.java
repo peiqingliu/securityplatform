@@ -27,4 +27,9 @@ public class LogServiceImpl implements LogService {
     public LogDao getRepository() {
         return logDao;
     }
+
+    @Override
+    public Integer countDistinctByLogType(Integer logType) {
+        return logDao.countDistinctByLogType(logType);
+    }
 }

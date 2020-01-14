@@ -12,4 +12,12 @@ import com.security.platform.modules.system.entity.User;
  */
 
 public interface LogService extends BaseService<Log,String> {
+
+    /**
+     * 查询总的登录数
+     * @param logType
+     * @return
+     */
+    Integer countDistinctByLogType(Integer logType);
+
 }

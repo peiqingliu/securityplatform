@@ -1,5 +1,6 @@
-package com.security.platform.modules.deviceSDK.service;
+package com.security.platform.modules.devicesdk.service;
 
+import com.security.platform.common.utils.AliyunOSSUtil;
 import com.security.platform.common.utils.ThreadPoolUtil;
 import com.security.platform.modules.monitor.entity.Camera;
 import com.security.platform.modules.monitor.service.CameraService;
@@ -15,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -50,6 +50,9 @@ public class AutoRegisterService {
     @Autowired
     private CameraService cameraService;
 
+    @Autowired
+    private AliyunOSSUtil aliyunOSSUtil;
+
 
     // 设备断线通知回调
     private DisConnect disConnectCallback = new DisConnect();
@@ -62,6 +65,7 @@ public class AutoRegisterService {
 
     // 预览句柄
     private NetSDKLib.LLong realplayHandle = new NetSDKLib.LLong(0);
+
 
     public void init(){
         // 打开工程，初始化，设置断线回调
@@ -78,8 +82,8 @@ public class AutoRegisterService {
         return AutoRegisterModule.startServer(ip,Integer.parseInt(port),servicCallback);
     }
 
-    public void stopServer(){
-        AutoRegisterModule.stopServer();
+    public boolean stopServer(){
+        return AutoRegisterModule.stopServer();
     }
 
 
@@ -91,7 +95,7 @@ public class AutoRegisterService {
      */
     public void addDevice(String deviceId, String username,String password){
         //判断设备是否存在
-        Camera camera = cameraService.get(deviceId);
+        Camera camera = cameraService.findByDevcieId(deviceId);
         if (null != camera){
             return;
         }
@@ -186,7 +190,10 @@ public class AutoRegisterService {
                             try {
                                 log.info("登录结果loginResult=" + loginResult);
                                 if(loginResult.get().longValue() != 0){
+                                    log.info("当前设备信息=" + camera.toString());
                                     camera.setLoginHandle(loginResult.get().longValue());
+                                    log.info("更新设备登录句柄=" + loginResult.get().longValue());
+                                    cameraService.update(camera);
                                     for(int i = 0; i < AutoRegisterModule.m_stDeviceInfo.byChanNum; i++) {
                                         //此处进行通道设置
                                     }
@@ -292,6 +299,8 @@ public class AutoRegisterService {
                         return;
                     }
                     ImageIO.write(bufferedImage, "jpg", new File(strFileName));
+                    //上传到阿里云
+                    aliyunOSSUtil.putObject("124.226.139.136",new File(strFileName));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

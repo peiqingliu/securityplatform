@@ -10,4 +10,12 @@ import com.security.platform.modules.monitor.entity.Camera;
  * @description TODO
  */
 public interface CameraDao extends BaseDao<Camera,String> {
+
+
+    Camera findByDevcieId(String devcieId);
+
+    long countDistinctByLoginHandle(long loginHandle );
+
+    long countDistinctByLoginHandleNot(long loginHandle);
+
 }

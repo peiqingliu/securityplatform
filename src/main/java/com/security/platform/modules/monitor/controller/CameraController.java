@@ -1,18 +1,16 @@
 package com.security.platform.modules.monitor.controller;
 
-import com.security.platform.base.BaseController;
 import com.security.platform.common.utils.PageUtil;
 import com.security.platform.common.utils.ResultUtil;
 import com.security.platform.common.vo.CameraVo;
 import com.security.platform.common.vo.PageVo;
 import com.security.platform.common.vo.Result;
 import com.security.platform.common.vo.SearchVo;
-import com.security.platform.modules.deviceSDK.service.AutoRegisterService;
-import com.security.platform.modules.deviceSDK.service.CapturePictureService;
+import com.security.platform.modules.devicesdk.service.AutoRegisterService;
+import com.security.platform.modules.devicesdk.service.CapturePictureService;
 import com.security.platform.modules.monitor.entity.Camera;
 import com.security.platform.modules.monitor.service.CameraService;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +29,10 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @Api(description = "摄像头端点")
-@RequestMapping("/us/monitor/camera")
+@RequestMapping("/us/test/monitor/camera")
 @CacheConfig(cacheNames = "camera")
 @Transactional
-public class CameraController extends BaseController<Camera,String> {
+public class CameraController{
 
 
 
@@ -63,6 +61,7 @@ public class CameraController extends BaseController<Camera,String> {
     @ApiOperation(value = "开启自动注册服务")
     @GetMapping(value = "/startAutoRegisterService")
     public Result<Object> startAutoRegisterService(){
+        log.info("开启注册");
         autoRegisterService.init();
         boolean isStartServer = autoRegisterService.startServer();
         if (isStartServer){
@@ -71,18 +70,41 @@ public class CameraController extends BaseController<Camera,String> {
         return new ResultUtil<Object>().setErrorMsg("服务开启失败");
     }
 
+    @ApiOperation(value = "停止服务")
+    @GetMapping(value = "/stopServer")
+    public Result<Object> cameraStopServer(){
+        boolean stopServer = autoRegisterService.stopServer();
+        if (stopServer){
+            return new ResultUtil<Object>().setSuccessMsg("服务成功关闭");
+        }
+        return new ResultUtil<Object>().setErrorMsg("服务关闭失败");
+    }
+
     @ApiOperation(value = "添加设备")
     @PostMapping(value = "/add")
     public Result<Object> add(@RequestBody Camera camera){
-        autoRegisterService.addDevice(camera.getDevcieId(),camera.getLoginName(),camera.getPassword());
+        //判断设备是否存在
+        Camera camera1 = cameraService.findByDevcieId(camera.getDevcieId());
+        if (null != camera1){
+            return new ResultUtil<Object>().setErrorMsg("该设备已经添加");
+        }
+        cameraService.save(camera);
+        //autoRegisterService.addDevice(camera.getDevcieId(),camera.getLoginName(),camera.getPassword());
         return new ResultUtil<Object>().setSuccessMsg("添加成功");
+    }
+    @ApiOperation(value = "更新设备")
+    @PostMapping(value = "/update")
+    public Result<Object> update(@RequestBody Camera camera){
+        //判断设备是否存在
+        cameraService.update(camera);
+        return new ResultUtil<Object>().setSuccessMsg("更新成功");
     }
 
     @ApiOperation(value = "远程截图")
     @PostMapping(value = "/remoteCapture")
     public Result<Object> remoteCapture(@RequestBody Camera camera){
         autoRegisterService.capture(camera,0);
-        return new ResultUtil<Object>().setSuccessMsg("添加成功");
+        return new ResultUtil<Object>().setSuccessMsg("截图成功");
     }
 
     @ApiOperation("查询设备是否在线")
@@ -96,9 +118,4 @@ public class CameraController extends BaseController<Camera,String> {
         return new ResultUtil<Object>().setErrorMsg("设备不在线");
     }
 
-
-    @Override
-    public CameraService getService() {
-        return cameraService;
-    }
 }

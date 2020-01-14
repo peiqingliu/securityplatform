@@ -1,7 +1,7 @@
-package com.security.platform.modules.deviceSDK.controller;
+package com.security.platform.modules.devicesdk.controller;
 
 import com.security.platform.common.vo.CameraVo;
-import com.security.platform.modules.deviceSDK.service.CapturePictureService;
+import com.security.platform.modules.devicesdk.service.CapturePictureService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

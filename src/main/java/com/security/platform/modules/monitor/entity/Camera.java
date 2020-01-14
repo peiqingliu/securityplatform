@@ -35,6 +35,14 @@ public class Camera extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String devcieId;
 
+
+    @ApiModelProperty("设备ip")
+    private String deviceIp;
+
+    @ApiModelProperty("设备端口号")
+    private int devicePort;
+
+
     @ApiModelProperty(value = "名称")
     @Column(unique = true, nullable = false)
     private String cameraName;
@@ -53,15 +61,13 @@ public class Camera extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String password;
 
+    @ApiModelProperty(value = "登录句柄")
+    private long loginHandle;
+
     @ApiModelProperty(value = "安装位置")
     private String position;
 
 
-    @ApiModelProperty("设备ip")
-    private String deviceIp;
-
-    @ApiModelProperty("设备端口号")
-    private int devicePort;
 
     @ApiModelProperty("负责人电话")
     private String mobile;
@@ -72,8 +78,6 @@ public class Camera extends BaseEntity {
     @ApiModelProperty("类型")
     private Integer type;
 
-    @ApiModelProperty(value = "登录句柄")
-    private long loginHandle;
 
     @ApiModelProperty("描述")
     private String description;

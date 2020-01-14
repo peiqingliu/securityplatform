@@ -22,4 +22,13 @@ public interface CameraService extends BaseService<Camera,String> {
      * @return
      */
     Page<Camera> findByCondition(Camera camera, SearchVo searchVo, Pageable pageable);
+
+    Camera findByDevcieId(String devcieId);
+
+    Long count();
+
+    long countByLoginHandle(long loginHandle);
+
+
+    long countByLoginHandleNot(long loginHandle);
 }

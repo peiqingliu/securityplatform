@@ -1,21 +1,23 @@
 package com.security.platform.modules.api;
 
-import com.security.platform.common.utils.CheckUtil;
-import com.security.platform.common.utils.ResultUtil;
-import com.security.platform.common.utils.SignUtil;
-import com.security.platform.common.utils.TimestampUtil;
+import com.security.platform.common.annotation.SystemLog;
+import com.security.platform.common.enums.LogType;
+import com.security.platform.common.utils.*;
 import com.security.platform.common.vo.CameraVo;
 import com.security.platform.common.vo.Result;
 import com.security.platform.common.vo.VerificationCodeParam;
-import com.security.platform.modules.deviceSDK.service.CapturePictureService;
+import com.security.platform.modules.devicesdk.service.CapturePictureService;
 import com.security.platform.netsdk.module.LoginModule;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import static com.security.platform.common.constant.RedisKeyConstant.pictureUrlKey;
 
 
 /**
@@ -45,12 +47,14 @@ public class ApiController {
     @Autowired
     private CapturePictureService capturePictureService;
 
+    @Autowired
+    private RedisUtil redisUtil;
 
 
+    @SystemLog(description = "远程抓图", type = LogType.OPERATION)
     @PostMapping("/remoteCapture")
     public Result<Object> remoteCapture(@ModelAttribute VerificationCodeParam param,
                                         @ModelAttribute CameraVo cameraVo){
-
         boolean init = capturePictureService.init();
         if (!init){
             return new ResultUtil<Object>().setErrorMsg("Initialize SDK failed");
@@ -61,7 +65,14 @@ public class ApiController {
         }
         //远程截图
         capturePictureService.remoteCapture();
-        return new ResultUtil<Object>().setSuccessMsg("截图成功");
+        String pictureUrl;
+        while (true){
+            pictureUrl = redisUtil.getPictureUrl(cameraVo.getIp() + ":" + pictureUrlKey);
+            if (StringUtils.isNotBlank(pictureUrl)){
+                break;
+            }
+        }
+        return new ResultUtil<Object>().setData(pictureUrl);
     }
 
     //签名校验

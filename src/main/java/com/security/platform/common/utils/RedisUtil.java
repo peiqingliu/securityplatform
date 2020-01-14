@@ -43,6 +43,27 @@ public class RedisUtil {
         return ho.get(redisKey);
     }
 
+    /**
+     * 保存截图图片
+     * @param redisKey
+     * @param pictureUrl
+     * @param expireTime
+     * @param timeUnit
+     */
+    public void setPictureUrl(String redisKey,String pictureUrl,long expireTime, TimeUnit timeUnit){
+        ValueOperations<String,String> ho = redisTemplate.opsForValue();
+        //存储用户资源权限到redis
+        ho.set(redisKey, pictureUrl, expireTime, timeUnit);
+    }
 
+    /**
+     * 缓存中读取
+     * @param redisKey
+     * @return
+     */
+    public String getPictureUrl(String redisKey) {
+        ValueOperations<String, String> ho = redisTemplate.opsForValue();
+        return ho.get(redisKey);
+    }
 
 }

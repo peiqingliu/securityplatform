@@ -47,15 +47,20 @@ public class CameraServiceImpl implements CameraService {
             @Override
             public Predicate toPredicate(Root<Camera> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
 
+                Path<String> devcieIdFiled = root.get("devcieId");
                 Path<String> cameraNameFiled = root.get("cameraName");
                 Path<String> cameraCodeField = root.get("cameraCode");
                 Path<String> cameraModelField = root.get("cameraModel");
-                Path<String> ipField = root.get("ip");
+                Path<String> deviceIpField = root.get("deviceIp");
                 Path<Integer> statusField = root.get("status");
                 Path<Date> createTimeField = root.get("createTime");
+
+
                 List<Predicate> list = new ArrayList<Predicate>();
-
-
+                //设备id
+                if (StrUtil.isNotBlank(camera.getDevcieId())){
+                    list.add(cb.equal(cameraNameFiled,camera.getDevcieId()));
+                }
                 //名称
                 if (StrUtil.isNotBlank(camera.getCameraName())){
                     list.add(cb.like(cameraNameFiled,'%' + camera.getCameraName() + '%'));
@@ -69,8 +74,8 @@ public class CameraServiceImpl implements CameraService {
                     list.add(cb.like(cameraModelField,'%' + camera.getCameraModel() + '%'));
                 }
                 //ip
-                if (StrUtil.isNotBlank(camera.getIp())){
-                    list.add(cb.equal(ipField,camera.getIp()));
+                if (StrUtil.isNotBlank(camera.getDeviceIp())){
+                    list.add(cb.equal(deviceIpField,camera.getDeviceIp()));
                 }
 
                 //状态
@@ -92,5 +97,25 @@ public class CameraServiceImpl implements CameraService {
                 return null;
             }
         },pageable);
+    }
+
+    @Override
+    public Camera findByDevcieId(String devcieId) {
+        return cameraDao.findByDevcieId(devcieId);
+    }
+
+    @Override
+    public Long count() {
+        return cameraDao.count();
+    }
+
+    @Override
+    public long countByLoginHandle(long loginHandle) {
+        return cameraDao.countDistinctByLoginHandle(loginHandle);
+    }
+
+    @Override
+    public long countByLoginHandleNot(long loginHandle) {
+        return cameraDao.countDistinctByLoginHandleNot(loginHandle);
     }
 }

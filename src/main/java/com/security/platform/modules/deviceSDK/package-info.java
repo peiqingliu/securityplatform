@@ -1,1 +1,0 @@
-package com.security.platform.modules.deviceSDK;

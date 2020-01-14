@@ -1,7 +1,9 @@
 package com.security.platform.config.security.jwt;
 
 import cn.hutool.core.util.StrUtil;
+import com.security.platform.common.annotation.SystemLog;
 import com.security.platform.common.constant.SecurityConstant;
+import com.security.platform.common.enums.LogType;
 import com.security.platform.common.utils.ResponseUtil;
 import com.security.platform.common.vo.TokenUser;
 import com.google.gson.Gson;
@@ -60,6 +62,7 @@ public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticatio
 
 
     @Override
+    @SystemLog(description = "登录系统", type = LogType.LOGIN)
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
         //用户选择保存登录状态几天

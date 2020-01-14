@@ -1,6 +1,5 @@
 package com.security.platform.common.utils;
 
-import cn.hutool.core.date.DateUtil;
 import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSException;
@@ -14,8 +13,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.io.InputStream;
-import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
+import static com.security.platform.common.constant.RedisKeyConstant.pictureUrlKey;
 
 /**
  * @author LiuPeiQing
@@ -44,6 +44,9 @@ public class AliyunOSSUtil {
     @Autowired
     private OSSClient ossClient;
 
+    @Autowired
+    private RedisUtil redisUtil;
+
     /**
      * 上传
      * @param
@@ -65,9 +68,10 @@ public class AliyunOSSUtil {
             //上传文件
             PutObjectResult result = ossClient.putObject(new PutObjectRequest(bucketName, fileUrl,file ));
             String resultUrl = webUrl +"/"+ fileUrl;//文件的web访问地址
+            redisUtil.setPictureUrl(ip + pictureUrlKey,resultUrl,5, TimeUnit.MINUTES);
             log.info("resultUrl=" + resultUrl);
             //设置权限 这里是公开读
-            ossClient.setBucketAcl(bucketName,CannedAccessControlList.PublicRead);
+           // ossClient.setBucketAcl(bucketName,CannedAccessControlList.PublicRead);
             if(null != result){
                 log.info("OSS文件上传成功,OSS地址："+resultUrl);
                 return resultUrl;
