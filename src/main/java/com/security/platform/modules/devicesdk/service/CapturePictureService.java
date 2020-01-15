@@ -2,8 +2,8 @@ package com.security.platform.modules.devicesdk.service;
 
 import com.security.platform.common.utils.AliyunOSSUtil;
 import com.security.platform.common.vo.CameraVo;
-import com.security.platform.modules.devicesdk.module.CapturePictureModule;
-import com.security.platform.modules.devicesdk.module.RealPlayModule;
+import com.security.platform.netsdk.module.CapturePictureModule;
+import com.security.platform.netsdk.module.RealPlayModule;
 import com.security.platform.netsdk.common.Res;
 import com.security.platform.netsdk.common.SavePath;
 import com.security.platform.netsdk.module.LoginModule;

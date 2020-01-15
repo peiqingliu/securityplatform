@@ -1,5 +1,7 @@
 package com.security.platform.modules.async.task;
 
+import com.security.platform.common.constant.CommonConstant;
+import com.security.platform.common.enums.LogType;
 import com.security.platform.common.utils.ThreadPoolUtil;
 import com.security.platform.common.vo.SearchVo;
 import com.security.platform.modules.async.dto.WelDataDto;
@@ -8,7 +10,6 @@ import com.security.platform.modules.monitor.service.CameraService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -32,52 +33,55 @@ public class WelFutureTask {
 
     private static ExecutorService executorService = ThreadPoolUtil.getPool();
 
-    @SuppressWarnings("all")
-    public WelDataDto getWelDataStatistics(final String userId, String departmentId, SearchVo searchVo){
-        log.info("WelFutureTask" + Thread.currentThread());
+    /**
+     * 传统方式 取结果
+     * @return
+     */
+    public WelDataDto findWelDataStatistics(){
         WelDataDto welDataDto = new WelDataDto();
+        Integer  loginTotal = logService.countDistinctByLogType(0);
+        Integer  interfaceUseTotal = logService.countDistinctByLogType(1);
+        Long deviceTotal = cameraService.count();
+        Long deviceOnlineTotal = cameraService.countByLoginHandleNot(0);
+        welDataDto.setLoginTotal(loginTotal);
+        welDataDto.setInterfaceUseTotal(interfaceUseTotal);
+        welDataDto.setDeviceTotal(deviceTotal);
+        welDataDto.setDeviceOnlineTotal(deviceOnlineTotal);
+        return welDataDto;
+    }
+
+    /**
+     * 多线程并发执行任务，取结果归集
+     * @return
+     */
+    @SuppressWarnings("all")
+    public WelDataDto getWelDataStatistics(){
+        log.info("WelFutureTask" + Thread.currentThread());
+        //登录总数 和 接口调用次数
+        Integer loginTotal = 0,interfaceUseTotal =0;
+        //设备总数 和 设备在线数
+        long deviceTotal = 0,deviceOnlineTotal=0;
+
         try {
 
-            Future<Integer> loginTotal = executorService.submit(new Callable<Integer>() {
-                @Override
-                public Integer call() throws Exception {
-                    Integer logType = 0;
-                    return logService.countDistinctByLogType(logType);
-                }
-            });
+            Future<Integer> loginTotalF = executorService.submit(() -> logService.countDistinctByLogType(CommonConstant.LOG_TYPE_OPERAT));
+            Future<Integer> interfaceUseTotalF = executorService.submit(() ->  logService.countDistinctByLogType(CommonConstant.LOG_TYPE_LOGIN));
+            Future<Long>  deviceTotalF = executorService.submit(() -> cameraService.count());
+            Future<Long> deviceOnlineTotalF = executorService.submit(() -> cameraService.countByLoginHandleNot(0L));
 
-            Future<Long>  deviceTotal = executorService.submit(new Callable<Long>() {
-                @Override
-                public Long call() throws Exception {
-                    return cameraService.count();
-                }
-            });
+            //使用get阻塞
+            loginTotal = loginTotalF.get();
+            interfaceUseTotal = interfaceUseTotalF.get();
+            deviceTotal = deviceTotalF.get();
+            deviceOnlineTotal = deviceOnlineTotalF.get();
 
-            Future<Long> deviceOnlineTotal = executorService.submit(new Callable<Long>() {
-                @Override
-                public Long call() throws Exception {
-                    Long loginHandle = 0L;
-                    return cameraService.countByLoginHandleNot(loginHandle);
-                }
-            });
-
-            if (loginTotal.isDone() && !loginTotal.isCancelled()){
-                welDataDto.setLoginTotal(loginTotal.get());
-            }
-            if (deviceTotal.isDone() && !deviceTotal.isCancelled()){
-                welDataDto.setDeviceTotal(deviceTotal.get());
-            }
-            if (deviceOnlineTotal.isDone() && !deviceOnlineTotal.isCancelled()){
-                welDataDto.setDeviceOnlineTotal(deviceOnlineTotal.get());
-            }
-
-            return welDataDto;
         }catch (Exception e){
             log.error(">>>>>>聚合查询用户聚合信息异常:" + e + "<<<<<<<<<");
         }
 
-
-        return null;
+        WelDataDto welDataDto = WelDataDto.builder().loginTotal(loginTotal).interfaceUseTotal(interfaceUseTotal)
+                .deviceTotal(deviceTotal).deviceOnlineTotal(deviceOnlineTotal).build();
+        return welDataDto;
 
     }
 }

@@ -1,8 +1,6 @@
 package com.security.platform.common.utils;
 
-import com.aliyun.oss.ClientException;
-import com.aliyun.oss.OSSClient;
-import com.aliyun.oss.OSSException;
+import com.aliyun.oss.*;
 import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.CreateBucketRequest;
 import com.aliyun.oss.model.PutObjectRequest;
@@ -29,20 +27,18 @@ import static com.security.platform.common.constant.RedisKeyConstant.pictureUrlK
 @Component
 public class AliyunOSSUtil {
 
-    @Value("${oss.bucketName}")
-    private String bucketName;
-
-    @Value("${oss.endpoint}")
-    private String fileHost;
-
     @Value("${oss.endpoint}")
     private String endpoint;
-
+    @Value("${oss.keyId}")
+    private String accessKeyId;
+    @Value("${oss.keySecret}")
+    private String accessKeySecret;
+    @Value("${oss.bucketName}")
+    private String bucketName;
+    @Value("${oss.endpoint}")
+    private String fileHost;
     @Value("${oss.webUrl}")
     private String webUrl;
-
-    @Autowired
-    private OSSClient ossClient;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -55,6 +51,7 @@ public class AliyunOSSUtil {
     public  String putObject(String ip, File file){
         log.info("OSS文件上传开始：");
         String dateStr = DateTimeUtil.formatDate();
+        OSS ossClient = getOSSClient();
         try {
             //容器不存在，就创建
             if(! ossClient.doesBucketExist(bucketName)){
@@ -93,16 +90,16 @@ public class AliyunOSSUtil {
      * @return
      */
     public  String deleteBlog(String fileKey){
-        log.info("=========>OSS文件删除开始");
+        OSS ossClient = getOSSClient();
         try {
             if(!ossClient.doesBucketExist(bucketName)){
-                log.info("==============>您的Bucket不存在");
+                log.info("您的Bucket不存在");
                 return "您的Bucket不存在";
             }else {
-                log.info("==============>开始删除Object");
+                log.info("开始删除Object");
                 ossClient.deleteObject(bucketName,fileKey);
-                log.info("==============>Object删除成功："+fileKey);
-                return "==============>Object删除成功："+fileKey;
+                log.info("Object删除成功："+fileKey);
+                return "Object删除成功："+fileKey;
             }
         }catch (Exception ex){
             log.info("删除Object失败",ex);
@@ -110,6 +107,13 @@ public class AliyunOSSUtil {
         }
     }
 
+    /**
+     * 生成ossClient
+     * @return
+     */
+    private OSS getOSSClient(){
+        return new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
+    }
 
 
 }

@@ -13,6 +13,7 @@ import com.sun.jna.Pointer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -28,7 +29,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-
+import static com.security.platform.common.constant.RedisKeyConstant.startService;
 /**
  * @author LiuPeiQing
  * @version 1.0
@@ -52,6 +53,9 @@ public class AutoRegisterService {
 
     @Autowired
     private AliyunOSSUtil aliyunOSSUtil;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
 
     // 设备断线通知回调
@@ -112,9 +116,9 @@ public class AutoRegisterService {
      * @param camera 设备信息
      * @param chn 通道 0
      */
-    public void capture(Camera camera, int chn){
+    public boolean capture(Camera camera, int chn){
         NetSDKLib.LLong loginHandle = new NetSDKLib.LLong(camera.getLoginHandle());
-        AutoRegisterModule.snapPicture(loginHandle, chn);
+        return AutoRegisterModule.snapPicture(loginHandle, chn);
     }
 
     // 停止对讲
@@ -139,7 +143,7 @@ public class AutoRegisterService {
         public int invoke(NetSDKLib.LLong lHandle, final String pIp, final int wPort,
                           int lCommand, Pointer pParam, int dwParamLen,
                           Pointer dwUserData) {
-
+            log.info("开始监听");
             // 将 pParam 转化为序列号
             byte[] buffer = new byte[dwParamLen];
             pParam.read(0, buffer, 0, dwParamLen);
@@ -151,6 +155,7 @@ public class AutoRegisterService {
                 e.printStackTrace();
             }
 
+            log.info("Register Device Info [Device address %s][port %s][DeviceID %s] \n"+pIp+ wPort+ deviceId);
             System.out.printf("Register Device Info [Device address %s][port %s][DeviceID %s] \n", pIp, wPort, deviceId);
             List<Camera> cameras = getAllCamera();
             switch(lCommand) {
@@ -188,7 +193,7 @@ public class AutoRegisterService {
                             });
 
                             try {
-                                log.info("登录结果loginResult=" + loginResult);
+                                log.info("登录结果loginResult=" + loginResult.get().longValue());
                                 if(loginResult.get().longValue() != 0){
                                     log.info("当前设备信息=" + camera.toString());
                                     camera.setLoginHandle(loginResult.get().longValue());
@@ -257,21 +262,19 @@ public class AutoRegisterService {
                         && nDVRPort == camera.getDevicePort()) {
 
                     synchronized (this) {
+                        //删除缓存
+                        redisTemplate.delete(startService);
                         // 停止断线设备的对讲, 主动注册中，对讲要用同步，不能在另开的线程里停止对讲，否则会出现句柄无效的错误
                         AutoRegisterModule.stopTalk(AutoRegisterModule.m_hTalkHandle);
-
                         // 停止断线设备的拉流
                         AutoRegisterModule.stopRealPlay(realplayHandle);
-
                         // 登出
                         if(camera.getLoginHandle() != 0) {
                             // 登录句柄
                             NetSDKLib.LLong loginHandle = new NetSDKLib.LLong(camera.getLoginHandle());
                             AutoRegisterModule.logout(loginHandle);
                         }
-
                     }
-
                     break;
                 }
             }

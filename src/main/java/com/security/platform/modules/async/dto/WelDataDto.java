@@ -1,8 +1,7 @@
 package com.security.platform.modules.async.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -13,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
  * @Software IntelliJ IDEA
  * @description 首页数据
  */
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Slf4j
 @Data
 @ToString

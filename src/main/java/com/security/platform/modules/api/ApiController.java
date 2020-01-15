@@ -55,6 +55,16 @@ public class ApiController {
     @PostMapping("/remoteCapture")
     public Result<Object> remoteCapture(@ModelAttribute VerificationCodeParam param,
                                         @ModelAttribute CameraVo cameraVo){
+        // 验证信息是否被篡改
+        if(!SignUtil.validateMessage(param, ticketSecret)) {
+            return new ResultUtil<Object>().setErrorMsg("签名信息错误!");
+        }
+        // 验证时间戳,防止重复提交
+        Boolean validateResult = timestampUtil.validateTimestamp("verificationCode", param.getTimeStamp());
+        if(!validateResult) {
+            return new ResultUtil<Object>().setErrorMsg("提交太频繁，请稍后重试!");
+        }
+
         boolean init = capturePictureService.init();
         if (!init){
             return new ResultUtil<Object>().setErrorMsg("Initialize SDK failed");

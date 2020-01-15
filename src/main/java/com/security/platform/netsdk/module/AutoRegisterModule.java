@@ -9,7 +9,9 @@ import com.security.platform.netsdk.lib.ToolKits;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class AutoRegisterModule {
 	// 监听服务句柄
 	public static LLong mServerHandler = new LLong(0);
@@ -31,8 +33,10 @@ public class AutoRegisterModule {
 		
 		mServerHandler = LoginModule.netsdk.CLIENT_ListenServer(address, port, 1000, callback, null);
 		if (0 == mServerHandler.longValue()) {
+			log.error("Failed to start server." +ToolKits.getErrorCodePrint());
 			System.err.println("Failed to start server." + ToolKits.getErrorCodePrint());
 		} else {
+			log.info("Start server, [Server address %s][Server port %d]\n"+ address + port);
 			System.out.printf("Start server, [Server address %s][Server port %d]\n", address, port);
 		}
 		return mServerHandler.longValue() != 0;
