@@ -5,6 +5,7 @@ import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.CreateBucketRequest;
 import com.aliyun.oss.model.PutObjectRequest;
 import com.aliyun.oss.model.PutObjectResult;
+import com.security.platform.modules.monitor.entity.Camera;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,8 +49,8 @@ public class AliyunOSSUtil {
      * @param
      * @return
      */
-    public  String putObject(String ip, File file){
-        log.info("OSS文件上传开始：");
+    public  String putObject(Camera camera, File file){
+        log.info("OSS文件上传开始：camera" + camera.toString());
         String dateStr = DateTimeUtil.formatDate();
         OSS ossClient = getOSSClient();
         try {
@@ -61,14 +62,55 @@ public class AliyunOSSUtil {
                 ossClient.createBucket(createBucketRequest);
             }
             //创建文件路径
-            String fileUrl = fileHost+"/"+(dateStr + "/" + ip.replace("-","")+"_"+file.getName());
+            String fileUrl = fileHost+"/"+(dateStr + "/" + camera.getDevcieId().replace("-","") + camera.getGroupId() +"_"+file.getName());
             //上传文件
             PutObjectResult result = ossClient.putObject(new PutObjectRequest(bucketName, fileUrl,file ));
             String resultUrl = webUrl +"/"+ fileUrl;//文件的web访问地址
-            redisUtil.setPictureUrl(ip + pictureUrlKey,resultUrl,5, TimeUnit.MINUTES);
+            redisUtil.setPictureUrl(camera.getDevcieId() + ":" + pictureUrlKey,resultUrl,5, TimeUnit.MINUTES);
             log.info("resultUrl=" + resultUrl);
             //设置权限 这里是公开读
            // ossClient.setBucketAcl(bucketName,CannedAccessControlList.PublicRead);
+            if(null != result){
+                log.info("OSS文件上传成功,OSS地址："+resultUrl);
+                return resultUrl;
+            }
+        }catch (OSSException oe){
+            log.error(oe.getMessage());
+        }catch (ClientException ce){
+            log.error(ce.getMessage());
+        }finally {
+            //关闭
+            ossClient.shutdown();
+        }
+        return null;
+    }
+
+    /**
+     * 上传
+     * @param
+     * @return
+     */
+    public  String putObject(String  devcieId, File file){
+        log.info("OSS文件上传开始：devcieId" + devcieId);
+        String dateStr = DateTimeUtil.formatDate();
+        OSS ossClient = getOSSClient();
+        try {
+            //容器不存在，就创建
+            if(! ossClient.doesBucketExist(bucketName)){
+                ossClient.createBucket(bucketName);
+                CreateBucketRequest createBucketRequest = new CreateBucketRequest(bucketName);
+                createBucketRequest.setCannedACL(CannedAccessControlList.PublicRead);
+                ossClient.createBucket(createBucketRequest);
+            }
+            //创建文件路径
+            String fileUrl = fileHost+"/"+(dateStr + "/" + devcieId.replace("-","") +"_"+file.getName());
+            //上传文件
+            PutObjectResult result = ossClient.putObject(new PutObjectRequest(bucketName, fileUrl,file ));
+            String resultUrl = webUrl +"/"+ fileUrl;//文件的web访问地址
+            redisUtil.setPictureUrl(devcieId + ":" + pictureUrlKey,resultUrl,5, TimeUnit.MINUTES);
+            log.info("resultUrl=" + resultUrl);
+            //设置权限 这里是公开读
+            // ossClient.setBucketAcl(bucketName,CannedAccessControlList.PublicRead);
             if(null != result){
                 log.info("OSS文件上传成功,OSS地址："+resultUrl);
                 return resultUrl;

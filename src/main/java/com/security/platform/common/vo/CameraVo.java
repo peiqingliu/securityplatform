@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data
 @ToString
-@ApiModel(value = "角色")
+@ApiModel(value = "摄像头信息")
 public class CameraVo {
 
     @ApiModelProperty(value = "摄像头ip")

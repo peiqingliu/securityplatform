@@ -81,4 +81,8 @@ public class Camera extends BaseEntity {
 
     @ApiModelProperty("描述")
     private String description;
+
+
+    @ApiModelProperty("所属组")
+    private String groupId;
 }

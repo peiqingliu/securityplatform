@@ -85,7 +85,7 @@ public class Utils {
 		System.out.printf("[Load %s Path : %s]\n", library, loadLibrary + library);
 		return loadLibrary + library;
 	}
-	
+
 	private static boolean checking = false;
 	public static void setChecking() {
 		checking = true;

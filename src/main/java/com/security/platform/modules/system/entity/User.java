@@ -103,7 +103,7 @@ public class User extends BaseEntity {
 
     @Transient
     @TableField(exist=false)
-    @ApiModelProperty(value = "导入数据时使用")
+    @ApiModelProperty(value = "创建用户时候用到")
     private String defaultRole;
 
 

@@ -51,6 +51,7 @@ public class AutoRegisterModule {
 		if(mServerHandler.longValue() != 0) {
 			bRet = LoginModule.netsdk.CLIENT_StopListenServer(mServerHandler);	
 			mServerHandler.setValue(0);
+			log.info("Stop server!");
 			System.out.println("Stop server!");
 		}
 		
@@ -145,10 +146,12 @@ public class AutoRegisterModule {
 		
 		IntByReference reserved = new IntByReference(0);
 		
-		if (!LoginModule.netsdk.CLIENT_SnapPictureEx(m_hLoginHandle, msg, reserved)) { 
+		if (!LoginModule.netsdk.CLIENT_SnapPictureEx(m_hLoginHandle, msg, reserved)) {
+			log.error("SnapPictureEx Failed!" + ToolKits.getErrorCodePrint());
 			System.err.printf("SnapPictureEx Failed!" + ToolKits.getErrorCodePrint());
 			return false;
-		} else { 
+		} else {
+			log.info("SnapPictureEx success");
 			System.out.println("SnapPictureEx success"); 
 		}
 		return true;

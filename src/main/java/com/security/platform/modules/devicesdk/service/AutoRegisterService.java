@@ -1,7 +1,9 @@
 package com.security.platform.modules.devicesdk.service;
 
 import com.security.platform.common.utils.AliyunOSSUtil;
+import com.security.platform.common.utils.RedisUtil;
 import com.security.platform.common.utils.ThreadPoolUtil;
+import com.security.platform.modules.api.dto.ApiDataDto;
 import com.security.platform.modules.monitor.entity.Camera;
 import com.security.platform.modules.monitor.service.CameraService;
 import com.security.platform.netsdk.common.SavePath;
@@ -11,6 +13,7 @@ import com.security.platform.netsdk.lib.NetSDKLib;
 import com.security.platform.netsdk.lib.ToolKits;
 import com.sun.jna.Pointer;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -24,12 +27,17 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import static com.security.platform.common.constant.RedisKeyConstant.startService;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static com.security.platform.common.constant.RedisKeyConstant.pictureUrlKey;
+
 /**
  * @author LiuPeiQing
  * @version 1.0
@@ -54,9 +62,14 @@ public class AutoRegisterService {
     @Autowired
     private AliyunOSSUtil aliyunOSSUtil;
 
+
+    @Autowired
+    private RedisUtil redisUtil;
+
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    private volatile static  String  deviceId = "";
 
     // 设备断线通知回调
     private DisConnect disConnectCallback = new DisConnect();
@@ -81,7 +94,7 @@ public class AutoRegisterService {
 
     //开启服务
     public boolean startServer(){
-        ip = ip == null ? getHostAddress() : ip;
+        String ip = getHostAddress();
         log.info("ip${ip}=" + ip + "port${port}=" + port);
         return AutoRegisterModule.startServer(ip,Integer.parseInt(port),servicCallback);
     }
@@ -92,23 +105,51 @@ public class AutoRegisterService {
 
 
     /**
-     *  添加设备
-     * @param deviceId 设备id
-     * @param username 登录名称
-     * @param password 登录密码
+     * 根据组别截图
+     * @param groupId 组别Id
+     * @return
      */
-    public void addDevice(String deviceId, String username,String password){
-        //判断设备是否存在
-        Camera camera = cameraService.findByDevcieId(deviceId);
-        if (null != camera){
-            return;
+    public List<ApiDataDto> captureByGroup(String groupId){
+        List<Camera> cameras = cameraService.findByGroupId(groupId);
+        List<ApiDataDto> apiDataDtos = new ArrayList<>(16);
+        if (null != cameras){
+            for (Camera camera : cameras){
+                ApiDataDto apiDataDto = new ApiDataDto();
+                long loginHandle = camera.getLoginHandle();
+                if (loginHandle == 0){
+                    apiDataDto.setDevcieId(camera.getDevcieId());
+                    apiDataDto.setPictureUrl(null);
+                    apiDataDto.setDescription("设备未登录。");
+                    apiDataDtos.add(apiDataDto);
+                    continue;
+                }
+                    //此处设计有缺陷，需要重新设计
+                    String devcieId = camera.getDevcieId();
+                    boolean result =   capture(camera,0);
+                    if (result){
+                        String pictureUrl;
+                        while (true){
+                            pictureUrl = redisUtil.getPictureUrl(devcieId + ":" + pictureUrlKey);
+                            if (!redisTemplate.hasKey(devcieId + ":" + pictureUrlKey) || StringUtils.isNotBlank(pictureUrl)){
+                                break;
+                            }
+                        }
+                        log.info("pictureUrl" + devcieId +":" +  pictureUrl);
+                        apiDataDto.setDevcieId(camera.getDevcieId());
+                        apiDataDto.setPictureUrl(pictureUrl);
+                        apiDataDto.setDescription("截图成功");
+                    }else {
+                        apiDataDto.setDevcieId(camera.getDevcieId());
+                        apiDataDto.setPictureUrl(null);
+                        apiDataDto.setDescription("截图失败");
+                    }
+                    apiDataDtos.add(apiDataDto);
+
+            }
+
+
         }
-        Camera deviceInfo = new Camera();
-        deviceInfo.setDevcieId(deviceId);
-        deviceInfo.setLoginName(username);
-        deviceInfo.setPassword(password);
-        //保存到数据库
-        cameraService.save(deviceInfo);
+        return apiDataDtos;
     }
 
     /**
@@ -117,6 +158,8 @@ public class AutoRegisterService {
      * @param chn 通道 0
      */
     public boolean capture(Camera camera, int chn){
+        deviceId = camera.getGroupId();
+        log.info("此时存储的设备是=" +camera.toString());
         NetSDKLib.LLong loginHandle = new NetSDKLib.LLong(camera.getLoginHandle());
         return AutoRegisterModule.snapPicture(loginHandle, chn);
     }
@@ -134,6 +177,11 @@ public class AutoRegisterService {
         }
     }
     // 登出所有设备
+    public boolean  logout(Camera camera){
+        long loginHandle = camera.getLoginHandle();
+        NetSDKLib.LLong m_hLoginHandle = new NetSDKLib.LLong(loginHandle);
+        return AutoRegisterModule.logout(m_hLoginHandle);
+    }
 
     /**
      * 侦听服务器回调函数
@@ -172,42 +220,46 @@ public class AutoRegisterService {
                 case NetSDKLib.EM_LISTEN_TYPE.NET_DVR_SERIAL_RETURN: { // 设备注册携带序列号
                     for (Camera camera : cameras){
                         if (camera.getDevcieId().equals(deviceId)){
-                            camera.setDeviceIp(pIp);
-                            camera.setDevicePort(wPort);
-                            //开一个线程去登录
-                            ExecutorService executorService = ThreadPoolUtil.getPool();
-                            Future<NetSDKLib.LLong> loginResult = executorService.submit(new Callable<NetSDKLib.LLong>() {
-                                @Override
-                                public NetSDKLib.LLong call() throws Exception {
-                                    DEVICE_INFO deviceInfo = new DEVICE_INFO();
-                                    deviceInfo.setDevcieId(camera.getDevcieId());
-                                    deviceInfo.setDeviceIp(camera.getDeviceIp());
-                                    deviceInfo.setUsername(camera.getLoginName());
-                                    deviceInfo.setPassword(camera.getPassword());
-                                    deviceInfo.setDevicePort(camera.getDevicePort());
-                                    NetSDKLib.LLong lLong = new NetSDKLib.LLong(camera.getLoginHandle());
-                                    deviceInfo.setLoginHandle(lLong);
-                                    log.info("匹配成功，开始连接=" + deviceInfo);
-                                    return login(deviceInfo);
-                                }
-                            });
-
-                            try {
-                                log.info("登录结果loginResult=" + loginResult.get().longValue());
-                                if(loginResult.get().longValue() != 0){
-                                    log.info("当前设备信息=" + camera.toString());
-                                    camera.setLoginHandle(loginResult.get().longValue());
-                                    log.info("更新设备登录句柄=" + loginResult.get().longValue());
-                                    cameraService.update(camera);
-                                    for(int i = 0; i < AutoRegisterModule.m_stDeviceInfo.byChanNum; i++) {
-                                        //此处进行通道设置
+                            log.info("设备注册id=" + deviceId);
+                           // Camera c  = cameraService.findByDevcieId(deviceId);
+                           // if (c == null){
+                                log.info("数据库里面，没有才进行连接");
+                                camera.setDeviceIp(pIp);
+                                camera.setDevicePort(wPort);
+                                    //开一个线程去登录
+                                    ExecutorService executorService = ThreadPoolUtil.getPool();
+                                    Future<NetSDKLib.LLong> loginResult = executorService.submit(new Callable<NetSDKLib.LLong>() {
+                                        @Override
+                                        public NetSDKLib.LLong call() throws Exception {
+                                            DEVICE_INFO deviceInfo = new DEVICE_INFO();
+                                            deviceInfo.setDevcieId(camera.getDevcieId());
+                                            deviceInfo.setDeviceIp(camera.getDeviceIp());
+                                            deviceInfo.setUsername(camera.getLoginName());
+                                            deviceInfo.setPassword(camera.getPassword());
+                                            deviceInfo.setDevicePort(camera.getDevicePort());
+                                            NetSDKLib.LLong lLong = new NetSDKLib.LLong(camera.getLoginHandle());
+                                            deviceInfo.setLoginHandle(lLong);
+                                            log.info("匹配成功，开始连接=" + deviceInfo);
+                                            return login(deviceInfo);
+                                        }
+                                    });
+                                    try {
+                                        log.info("登录结果loginResult=" + loginResult.get().longValue());
+                                        if(loginResult.get().longValue() != 0){
+                                            log.info("当前设备信息=" + camera.toString());
+                                            camera.setLoginHandle(loginResult.get().longValue());
+                                            log.info("更新设备登录句柄=" + loginResult.get().longValue());
+                                            cameraService.update(camera);
+                                            for(int i = 0; i < AutoRegisterModule.m_stDeviceInfo.byChanNum; i++) {
+                                                //此处进行通道设置
+                                            }
+                                        }
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
                                     }
-                                }
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            } catch (ExecutionException e) {
-                                e.printStackTrace();
-                            }
+                           // }
                             break;
                         }
                     }
@@ -254,7 +306,7 @@ public class AutoRegisterService {
     private class DisConnect implements NetSDKLib.fDisConnect {
         public void invoke(NetSDKLib.LLong m_hLoginHandle, String pchDVRIP, int nDVRPort, Pointer dwUser) {
             System.out.printf("Device[%s] Port[%d] DisConnect!\n", pchDVRIP, nDVRPort);
-
+            log.info("设备断线，进入回调函数");
             List<Camera> cameras = getAllCamera();
             for (Camera camera : cameras){
                 // 根据设备IP判断断线设备
@@ -262,15 +314,21 @@ public class AutoRegisterService {
                         && nDVRPort == camera.getDevicePort()) {
 
                     synchronized (this) {
+                        log.info("断线设备信息=" +pchDVRIP + "," + nDVRPort );
                         //删除缓存
-                        redisTemplate.delete(startService);
+                        //redisTemplate.delete(startService);
                         // 停止断线设备的对讲, 主动注册中，对讲要用同步，不能在另开的线程里停止对讲，否则会出现句柄无效的错误
                         AutoRegisterModule.stopTalk(AutoRegisterModule.m_hTalkHandle);
                         // 停止断线设备的拉流
                         AutoRegisterModule.stopRealPlay(realplayHandle);
+
                         // 登出
+                        log.info("设备断线登出，设备登录句柄=" + camera.getLoginHandle());
                         if(camera.getLoginHandle() != 0) {
-                            // 登录句柄
+                            //设备设置
+                            camera.setLoginHandle(0);
+                            cameraService.update(camera);
+                            // 登出句柄
                             NetSDKLib.LLong loginHandle = new NetSDKLib.LLong(camera.getLoginHandle());
                             AutoRegisterModule.logout(loginHandle);
                         }
@@ -291,9 +349,10 @@ public class AutoRegisterService {
         public void invoke(NetSDKLib.LLong lLoginID, Pointer pBuf, int RevLen, int EncodeType, int CmdSerial, Pointer dwUser) {
             if (pBuf != null && RevLen > 0) {
                 String strFileName = SavePath.getSavePath().getSaveCapturePath();
-
+                log.info("回调截图lLoginID" + lLoginID);
+                Camera camera = cameraService.findByLoginHandle(lLoginID.longValue());
+                log.info("根据登录句柄获取到的设备" + camera.toString());
                 System.out.println("strFileName = " + strFileName);
-
                 byte[] buf = pBuf.getByteArray(0, RevLen);
                 ByteArrayInputStream byteArrInput = new ByteArrayInputStream(buf);
                 try {
@@ -303,7 +362,7 @@ public class AutoRegisterService {
                     }
                     ImageIO.write(bufferedImage, "jpg", new File(strFileName));
                     //上传到阿里云
-                    aliyunOSSUtil.putObject("124.226.139.136",new File(strFileName));
+                    aliyunOSSUtil.putObject(camera,new File(strFileName));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

@@ -135,7 +135,7 @@ public class CameraController{
     @SystemLog(description = "删除设备", type = LogType.OPERATION)
     @PostMapping("/remove")
     @ApiOperation(value = "删除", notes = "设备id")
-    public Result<Object> removeUser(@Valid String ids) {
+    public Result<Object> removeCamera(@Valid String ids) {
         if (StringUtils.isNotEmpty(ids)){
             List<String> idList = Arrays.asList(ids.split(","));
             for(String id : idList){
@@ -155,12 +155,37 @@ public class CameraController{
         return new ResultUtil<Object>().setErrorMsg("截图失败，请查看相关日志");
     }
 
+
+    @GetMapping("/detail")
+    public Result<Object> detail(@RequestParam("id") String id){
+        log.info("使用二维码进行查询");
+        Camera camera = cameraService.get(id);
+        return new ResultUtil<Object>().setData(camera);
+    }
+
+    /**
+     * 登出
+     */
+    @SystemLog(description = "登出设备", type = LogType.OPERATION)
+    @PostMapping("/logout")
+    @ApiOperation(value = "登出设备", notes = "设备id")
+    public Result<Object> logout(@RequestBody  Camera camera) {
+        boolean result = autoRegisterService.logout(camera);
+        if (result){
+            camera.setLoginHandle(0);
+            //将登陆句柄置为0
+            cameraService.update(camera);
+            return new ResultUtil<Object>().setData("设备成功登出");
+        }
+        return new ResultUtil<Object>().setErrorMsg("设备登出失败");
+    }
+
+
     @ApiOperation("查询设备是否在线")
     @GetMapping("/isOnline")
     public Result<Object> isOnline( @ModelAttribute CameraVo cameraVo){
         boolean result = capturePictureService.isOnline(cameraVo);
         if (result){
-
             return new ResultUtil<Object>().setSuccessMsg("设备在线");
         }
         return new ResultUtil<Object>().setErrorMsg("设备不在线");

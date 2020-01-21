@@ -6,7 +6,11 @@ import com.security.platform.common.utils.*;
 import com.security.platform.common.vo.CameraVo;
 import com.security.platform.common.vo.Result;
 import com.security.platform.common.vo.VerificationCodeParam;
+import com.security.platform.modules.api.dto.ApiDataDto;
+import com.security.platform.modules.devicesdk.service.AutoRegisterService;
 import com.security.platform.modules.devicesdk.service.CapturePictureService;
+import com.security.platform.modules.monitor.entity.Camera;
+import com.security.platform.modules.monitor.service.CameraService;
 import com.security.platform.netsdk.module.LoginModule;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -17,7 +21,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import static com.security.platform.common.constant.RedisKeyConstant.pictureUrlKey;
+import java.util.List;
+
 
 
 /**
@@ -48,41 +53,36 @@ public class ApiController {
     private CapturePictureService capturePictureService;
 
     @Autowired
-    private RedisUtil redisUtil;
+    private AutoRegisterService autoRegisterService;
 
 
+
+    @Autowired
+    private CameraService cameraService;
+
+
+    /**
+     * 为了能够使 接口返回抓图的结果，此处使用redis在不停的轮训结果
+     * @param param
+     * @param groupId 组别
+     * @return
+     */
     @SystemLog(description = "远程抓图", type = LogType.OPERATION)
-    @PostMapping("/remoteCapture")
-    public Result<Object> remoteCapture(@ModelAttribute VerificationCodeParam param,
-                                        @ModelAttribute CameraVo cameraVo){
+    @GetMapping("/remoteCapture")
+    public Result<List<ApiDataDto>> remoteCapture(@ModelAttribute VerificationCodeParam param,
+                                        @RequestParam("groupId") String groupId){
         // 验证信息是否被篡改
         if(!SignUtil.validateMessage(param, ticketSecret)) {
-            return new ResultUtil<Object>().setErrorMsg("签名信息错误!");
+            return new ResultUtil<List<ApiDataDto>>().setErrorMsg("签名信息错误!");
         }
         // 验证时间戳,防止重复提交
         Boolean validateResult = timestampUtil.validateTimestamp("verificationCode", param.getTimeStamp());
         if(!validateResult) {
-            return new ResultUtil<Object>().setErrorMsg("提交太频繁，请稍后重试!");
+            return new ResultUtil<List<ApiDataDto>>().setErrorMsg("提交太频繁，请稍后重试!");
         }
 
-        boolean init = capturePictureService.init();
-        if (!init){
-            return new ResultUtil<Object>().setErrorMsg("Initialize SDK failed");
-        }
-        boolean login = capturePictureService.login(cameraVo.getIp(),cameraVo.getPort(),cameraVo.getLoginName(),cameraVo.getPassword());
-        if (!login){
-            return new ResultUtil<Object>().setErrorMsg("LOGIN_FAILED" + ", " + LoginModule.netsdk.CLIENT_GetLastError() + ",ERROR_MESSAGE" + 0);
-        }
-        //远程截图
-        capturePictureService.remoteCapture();
-        String pictureUrl;
-        while (true){
-            pictureUrl = redisUtil.getPictureUrl(cameraVo.getIp() + ":" + pictureUrlKey);
-            if (StringUtils.isNotBlank(pictureUrl)){
-                break;
-            }
-        }
-        return new ResultUtil<Object>().setData(pictureUrl);
+        List<ApiDataDto> result = autoRegisterService.captureByGroup(groupId);
+        return new ResultUtil<List<ApiDataDto>>().setData(result);
     }
 
     //签名校验
@@ -100,6 +100,12 @@ public class ApiController {
         return true;
     }
 
+    @GetMapping("/getByloginHandle")
+    public Result<Camera> getByLoginHandle(@RequestParam("loginHandler") long loginHandler){
+        Camera camera =  cameraService.findByLoginHandle(loginHandler);
+        return new ResultUtil<Camera>().setData(camera);
+    }
+
 
     @ApiOperation("获取签名信息")
     @GetMapping("/getSign")
@@ -109,6 +115,18 @@ public class ApiController {
         String sign = check.makeSign();
         log.info("sign ===" +sign);
         return new ResultUtil<String>().setData(sign);
+    }
+
+    @ApiOperation(value = "二维码远程截图")
+    @GetMapping("/qrCodeRemoteCapture")
+    public String qrCodeRemoteCapture(@RequestParam("id") String id){
+        log.info("使用二维码进行截图");
+        Camera camera = cameraService.get(id);
+        boolean result =  autoRegisterService.capture(camera,0);
+        if (result){
+            return "success Capture";
+        }
+        return "fail Capture";
     }
 
 

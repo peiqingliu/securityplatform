@@ -20,9 +20,9 @@ spring:
     mode: LEGACYHTML5
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/securityplatform?useSSL=false&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
-    username: root
-    password: 123456
+    url: jdbc:mysql://localhost:3306/camera?useSSL=false&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
+    username: camera
+    password: camera123456
     druid:
       validation-query: select 1
       validation-query-timeout: 2000
@@ -58,6 +58,22 @@ spring:
   messages:
     basename: i18n/res
 #    open-in-view: true
+  redis:
+    host: 127.0.0.1
+    password:
+    # 数据库索引 默认0
+    database: 0
+    port: 6379
+    # 超时时间 Duration类型 3秒
+    timeout: 3S
+  # 文件大小上传配置
+  servlet:
+    multipart:
+      max-file-size: 3072MB
+      max-request-size: 3072MB
+  jackson:
+    time-zone: GMT+8
+
 oss:
   endpoint: oss-cn-shenzhen.aliyuncs.com
   keyId:    LTAI4FqEDM7a8h9QFMBFimJp # 填写刚刚生成的AccessKey
@@ -72,13 +88,9 @@ us:
   # 接口过期时间（分钟）
   tickerExpireTime: 1440
   #自动注册 服务器ip
-  ip: 172.17.0.6
+  ip: 121.201.2.178
   #自动注册 端口
   port: 9500
-  #文件上传路径
-  uploadFolder:
-    path: D:/data/files/
-    temp: D:/data/tempfiles/
   #token
   token:
     # 默认redis 设置为true后，token将存入redis，并具有单点登录功能 设为false将使用JWT交互
@@ -93,10 +105,6 @@ us:
   loginTimeLimit: 10
   # 错误超过次数后多少分钟后才能继续登录（分钟）
   loginAfterTime: 10
-  tenant:
-    column: tenant_id
-    tables:
-      - t_notice
 ignored:
   urls:
     - /editor-app/**
@@ -109,10 +117,7 @@ ignored:
     - /us/social/**
     - /us/ws/**
     - /us/user/regist
-    - /us/user/smsLogin
-    - /us/user/resetByMobile
     - /us/common/**
-    - /us/flow/process/diagram-view
     - /druid/**
     - /swagger-ui.html
     - /swagger-resources/**

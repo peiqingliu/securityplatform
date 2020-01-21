@@ -105,14 +105,20 @@ public class CameraServiceImpl implements CameraService {
     }
 
     @Override
+    public Camera findByLoginHandle(Long loginHandle) {
+        return cameraDao.findByLoginHandle(loginHandle);
+    }
+
+    @Override
+    public List<Camera> findByGroupId(String groupId) {
+        return cameraDao.findAllByGroupId(groupId);
+    }
+
+    @Override
     public Long count() {
         return cameraDao.count();
     }
 
-    @Override
-    public long countByLoginHandle(long loginHandle) {
-        return cameraDao.countDistinctByLoginHandle(loginHandle);
-    }
 
     @Override
     public long countByLoginHandleNot(long loginHandle) {
